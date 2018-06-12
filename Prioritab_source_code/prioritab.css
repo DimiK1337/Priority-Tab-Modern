@@ -19,7 +19,7 @@
 
 #main-background-image {
   background-image:url('');
-  background-size:cover;
+  
   
 }
 * {
@@ -37,6 +37,7 @@ body {
   margin-left: auto;
   margin-right: auto;
   cursor: default;
+  background-size:cover;
 }
 
 .cursor-pointer {
