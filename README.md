@@ -12,7 +12,7 @@ A modified version of the chrome extension prioritab.
 ### Installation:
 
 1. Download the whole folder.
-2. Click this link to go to the chrome extensions page: [Chrome extensions](chrome://extensions)
+2. Go to the chrome extensions page: chrome://extensions/
 3. Click load unpacked
 4. Locate the downloaded source code and upload it 
 5. Now enable it in the chrome options menu
