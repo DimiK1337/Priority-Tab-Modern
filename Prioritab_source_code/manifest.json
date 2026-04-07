@@ -1,11 +1,15 @@
 {
-"update_url": "https://clients2.google.com/service/update2/crx",
-
+  "update_url": "https://clients2.google.com/service/update2/crx",
   "name": "Prioritab (modified)",
   "description": "A new tab page to remind you of your priorities, with lit custom backgrounds",
-  "version": "2.0.0",
+  "version": "1.0.0",
   "chrome_url_overrides": {
     "newtab": "prioritab.html"
+  },
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "prioritab@dimik1337.dev"
+    }
   },
   "icons": {
     "16": "prioritab_logo_v2_16.png",
@@ -13,7 +17,10 @@
     "48": "prioritab_logo_v2_48.png",
     "128": "prioritab_logo_v2_128.png"
   },
-  "manifest_version": 2,
-  "permissions": ["storage","unlimitedStorage"],
-  "content_security_policy":"script-src 'self' https://apis.google.com; object-src 'self'"
+  "manifest_version": 3,
+  "permissions": [
+    "storage",
+    "unlimitedStorage",
+    "management"
+  ]
 }
