@@ -2,10 +2,13 @@
 // http://web.koesbong.com/2011/01/24/sortable-and-editable-to-do-list-using-html5s-localstorage/
 
 $(function () {
-  var il, im, ir,
+
+  //const browser = (window.chrome) ? window.chrome : window.browser
+
+  /* var il = 1, im = 1, ir = 1, dones = [],
     listCounters = ['todo-counter-left', 'todo-counter-mid', 'todo-counter-right', 'todo-dones'],
-    j = 0,
-    k,
+    //j = 0,
+    //k,
     $formLeft = $('#todo-form-left'),
     $formMid = $('#todo-form-mid'),
     $formRight = $('#todo-form-right'),
@@ -18,9 +21,37 @@ $(function () {
     $clearAll = $('.clear-all-link'),
     $newTodo = $('.todo'),
     order = [],
-    orderList;
+    orderList; */
 
-  chrome.storage.sync.get(listCounters, function (result) {
+  let il = 1;
+  let im = 1;
+  let ir = 1;
+  let dones = [];
+
+  const listCounters = ['todo-counter-left', 'todo-counter-mid', 'todo-counter-right', 'todo-dones'];
+
+  let j = 0;
+  let k;
+
+  const $formLeft = $('#todo-form-left');
+  const $formMid = $('#todo-form-mid');
+  const $formRight = $('#todo-form-right');
+
+  const $removeLink = $('#shown-items-left li a');
+
+  const $itemListLeft = $('#shown-items-left');
+  const $itemListMid = $('#shown-items-mid');
+  const $itemListRight = $('#shown-items-right');
+
+  const $editable = $('.editable');
+  const $sweepDone = $('.sweep-link');
+  const $clearAll = $('.clear-all-link');
+  const $newTodo = $('.todo');
+
+  const order = [];
+  let orderList;
+
+  browser.storage.sync.get(listCounters, function (result) {
     il = (result['todo-counter-left']) ? result['todo-counter-left'] + 1 : 1;
     im = (result['todo-counter-mid']) ? result['todo-counter-mid'] + 1 : 1;
     ir = (result['todo-counter-right']) ? result['todo-counter-right'] + 1 : 1;
@@ -48,7 +79,7 @@ $(function () {
   };
 
   // Load todo list keys
-  chrome.storage.sync.get('todo-orders', function (retrieved) {
+  browser.storage.sync.get('todo-orders', function (retrieved) {
     orderList = retrieved['todo-orders'];
     orderList = orderList ? orderList.split(',') : [];
 
@@ -67,7 +98,7 @@ $(function () {
     }
 
     // Render existing todo items into the three separate lists
-    chrome.storage.sync.get(orderListLeft, function (result) {
+    browser.storage.sync.get(orderListLeft, function (result) {
       orderListLeft.forEach(function (key) {
         $('#shown-items-left').append(constructToDoCard(key, result[key]));
         if (checkIfCompleted(key)) {
@@ -77,7 +108,7 @@ $(function () {
       $('li a').fadeOut();
     });
 
-    chrome.storage.sync.get(orderListMid, function (result) {
+    browser.storage.sync.get(orderListMid, function (result) {
       orderListMid.forEach(function (key) {
         $('#shown-items-mid').append(constructToDoCard(key, result[key]));
         if (checkIfCompleted(key)) {
@@ -87,7 +118,7 @@ $(function () {
       $('li a').fadeOut();
     });
 
-    chrome.storage.sync.get(orderListRight, function (result) {
+    browser.storage.sync.get(orderListRight, function (result) {
       orderListRight.forEach(function (key) {
         $('#shown-items-right').append(constructToDoCard(key, result[key]));
         if (checkIfCompleted(key)) {
@@ -114,7 +145,7 @@ $(function () {
         dones.splice(dones.indexOf(toDoKey), 1);
       }
     }
-    chrome.storage.sync.set({
+    browser.storage.sync.set({
       'todo-dones': dones
     });
   });
@@ -188,7 +219,7 @@ $(function () {
       var newTodoID = $(this).parent().attr('id'),
         objToSave = {};
       objToSave[newTodoID] = data.value;
-      chrome.storage.sync.set(objToSave);
+      browser.storage.sync.set(objToSave);
     }
   });
 
@@ -270,19 +301,21 @@ $(function () {
 
       // Take the value of the input field and save it to localStorage
       var newTodoID = "todo-" + listID + '-' + listCounter;
+      console.log(`appending new item, newTodoID = ${newTodoID}`)
 
       var objToSave = {};
       objToSave[newTodoID] = todoToAdd.value;
-      chrome.storage.sync.set(objToSave);
+      browser.storage.sync.set(objToSave);
 
       // Set the to-do max counter so on page refresh it keeps going up instead of reset
       var counterToSave = {},
         counterKey = "todo-counter-" + listID;
       counterToSave[counterKey] = listCounter;
-      chrome.storage.sync.set(counterToSave);
+      browser.storage.sync.set(counterToSave);
 
       // Append a new list item with the value of the new todo list
-      chrome.storage.sync.get(newTodoID, function (result) {
+      browser.storage.sync.get(newTodoID, function (result) {
+        console.log(`appending new item, result = ${result}, newTodoID = ${newTodoID}`)
         listToImpact.append(constructToDoCard(newTodoID, result[newTodoID]));
         $('li a:visible').fadeOut();
 
@@ -298,19 +331,19 @@ $(function () {
       switch (listID) {
         case 'left':
           il++;
-          chrome.storage.sync.set({
+          browser.storage.sync.set({
             'todo-counter-left': il
           });
           break;
         case 'mid':
           im++;
-          chrome.storage.sync.set({
+          browser.storage.sync.set({
             'todo-counter-mid': im
           });
           break;
         case 'right':
           ir++;
-          chrome.storage.sync.set({
+          browser.storage.sync.set({
             'todo-counter-right': ir
           });
           break;
@@ -323,12 +356,12 @@ $(function () {
     var parentId = $this.parent().parent().attr('id');
 
     // Remove todo list from localStorage based on the id of the clicked parent element
-    chrome.storage.sync.remove(parentId);
+    browser.storage.sync.remove(parentId);
 
     // Remove todo from the dones list, in case it was there
     if (checkIfCompleted(parentId)) {
       dones.splice(dones.indexOf(parentId), 1);
-      chrome.storage.sync.set({
+      browser.storage.sync.set({
         'todo-dones': dones
       });
     }
@@ -370,36 +403,36 @@ $(function () {
         switch (target) {
           case 'left':
             il++;
-            chrome.storage.sync.set({
+            browser.storage.sync.set({
               'todo-counter-left': il
             });
             break;
           case 'mid':
             im++;
-            chrome.storage.sync.set({
+            browser.storage.sync.set({
               'todo-counter-mid': im
             });
             break;
           case 'right':
             ir++;
-            chrome.storage.sync.set({
+            browser.storage.sync.set({
               'todo-counter-right': ir
             });
             break;
         }
 
         // Store todo item under new key
-        chrome.storage.sync.get(oldID, function (retrieved) {
+        browser.storage.sync.get(oldID, function (retrieved) {
           oldValue = retrieved[oldID];
           var objToSave = {};
           objToSave[newID] = oldValue;
-          chrome.storage.sync.set(objToSave);
+          browser.storage.sync.set(objToSave);
         });
 
         if (checkIfCompleted(oldID)) { // If the todo was already done
           dones.splice(dones.indexOf(oldID), 1); // Remove the old todo ID from the dones list
           dones.push(newID); // and push in the new one
-          chrome.storage.sync.set({
+          browser.storage.sync.set({
             'todo-dones': dones
           });
         }
@@ -450,7 +483,7 @@ $(function () {
     });
 
     // Convert the array into string and save to localStorage
-    chrome.storage.sync.set({
+    browser.storage.sync.set({
       'todo-orders': order.join(',')
     });
   });
