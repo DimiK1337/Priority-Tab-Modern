@@ -3,25 +3,7 @@
 
 $(function () {
 
-  //const browser = (window.chrome) ? window.chrome : window.browser
-
-  /* var il = 1, im = 1, ir = 1, dones = [],
-    listCounters = ['todo-counter-left', 'todo-counter-mid', 'todo-counter-right', 'todo-dones'],
-    //j = 0,
-    //k,
-    $formLeft = $('#todo-form-left'),
-    $formMid = $('#todo-form-mid'),
-    $formRight = $('#todo-form-right'),
-    $removeLink = $('#shown-items-left li a'),
-    $itemListLeft = $('#shown-items-left'),
-    $itemListMid = $('#shown-items-mid'),
-    $itemListRight = $('#shown-items-right'),
-    $editable = $('.editable'),
-    $sweepDone = $('.sweep-link'),
-    $clearAll = $('.clear-all-link'),
-    $newTodo = $('.todo'),
-    order = [],
-    orderList; */
+  const browser = (window.chrome) ? window.chrome : window.browser
 
   let il = 1;
   let im = 1;
@@ -58,24 +40,28 @@ $(function () {
     dones = (result['todo-dones']) ? result['todo-dones'] : [];
   });
 
-  var checkIfCompleted = function (toDoKey) {
-    var done = (dones.indexOf(toDoKey) > -1);
-    return done;
-  };
+  const checkIfCompleted = (toDoKey) => dones.indexOf(toDoKey) > -1;
 
   // Holds the HTML for a todo card (HTML might appear elsewhere as well)
-  var constructToDoCard = function (toDoKey, toDoText) {
-    var done = (checkIfCompleted(toDoKey)) ? 'checked' : '',
-      fontColorToUse = (done === 'checked') ? 'shadow-color' : 'main-font-color',
-      borderColorToUse = (done === 'checked') ? 'shadow-border-color' : 'main-border-color';
-    return "<li class='todo-card main-bgcolor " + fontColorToUse + " " + borderColorToUse + "' id='" + toDoKey + "'>" +
-      "<div class='squaredThree'>" +
-      "<input id='" + toDoKey + "-check' type='checkbox' name='check' " + done + "/>" +
-      "<label for='" + toDoKey + "-check'></label>" +
-      "</div>" +
-      "<div class='todo-text'>" + toDoText + "</div>" +
-      "<div class='pull-right todo-card-right'><a href='#' class='main-font-color'><i class='fa fa-trash-o' title='Delete'></i></a></div>" +
-      "</li>";
+  const constructToDoCard = function (toDoKey, toDoText) {
+    const done = checkIfCompleted(toDoKey) ? 'checked' : '';
+    const fontColorToUse = done === 'checked' ? 'shadow-color' : 'main-font-color';
+    const borderColorToUse = done === 'checked' ? 'shadow-border-color' : 'main-border-color';
+
+    return `
+      <li id="${toDoKey}" class="todo-card main-bgcolor ${fontColorToUse} ${borderColorToUse}">
+        <div class="squaredThree">
+          <input id="${toDoKey}-check" type="checkbox" name="check" ${done} />
+          <label for="${toDoKey}-check"></label>
+        </div>
+        <div class="todo-text">${toDoText}</div>
+        <div class="pull-right todo-card-right">
+          <a href="#" class="main-font-color">
+            <i class="fa fa-trash-o" title="Delete"></i>
+          </a>
+        </div>
+      </li>
+    `;
   };
 
   // Load todo list keys
@@ -133,13 +119,17 @@ $(function () {
 
   // What happens when you check the checkbox...
   $('.shown-items').on('change', 'input[type=checkbox]', function () {
-    var toDoKey = $(this).parent().parent().attr('id');
+    const toDoKey = $(this).parent().parent().attr('id');
     if ($(this).is(':checked') === true) {
-      $(this).parent().parent().addClass('shadow-color').addClass('shadow-border-color').removeClass('main-font-color').removeClass('main-border-color');
+      $(this).parent().parent()
+        .addClass('shadow-color').addClass('shadow-border-color')
+        .removeClass('main-font-color').removeClass('main-border-color');
       $(this).parent().parent().find('.todo-text').addClass('todo-card-done');
       dones.push(toDoKey);
     } else {
-      $(this).parent().parent().addClass('main-font-color').addClass('main-border-color').removeClass('shadow-color').removeClass('shadow-border-color');
+      $(this).parent().parent()
+        .addClass('main-font-color').addClass('main-border-color')
+        .removeClass('shadow-color').removeClass('shadow-border-color');
       $(this).parent().parent().find('.todo-text').removeClass('todo-card-done');
       if (checkIfCompleted(toDoKey)) {
         dones.splice(dones.indexOf(toDoKey), 1);
@@ -353,7 +343,7 @@ $(function () {
   });
 
   $.subscribe('/remove/', function ($this) {
-    var parentId = $this.parent().parent().attr('id');
+    const parentId = $this.parent().parent().attr('id');
 
     // Remove todo list from localStorage based on the id of the clicked parent element
     browser.storage.sync.remove(parentId);
@@ -376,7 +366,7 @@ $(function () {
     // ScrollMessage();
   });
 
-  var reassignToList = function (inputDict) {
+  const reassignToList = (inputDict) => {
     var target = inputDict['target'],
       items = inputDict['items'];
 
@@ -395,9 +385,9 @@ $(function () {
     items.each(function () {
       if (this.id.indexOf(target) < 0) {
         // Reassign ID
-        var oldID = this.id,
-          oldValue;
-        newID = "todo-" + target + "-" + listCounter;
+        let oldValue;
+        const oldID = this.id;
+        const newID = `todo-${target}-${listCounter}`; 
         this.id = newID;
 
         switch (target) {
@@ -424,7 +414,7 @@ $(function () {
         // Store todo item under new key
         browser.storage.sync.get(oldID, function (retrieved) {
           oldValue = retrieved[oldID];
-          var objToSave = {};
+          const objToSave = {};
           objToSave[newID] = oldValue;
           browser.storage.sync.set(objToSave);
         });
@@ -443,9 +433,9 @@ $(function () {
   };
 
   $.subscribe('/regenerate-list/', function () {
-    var $todoItemsLeft = $('#shown-items-left li'),
-      $todoItemsMid = $('#shown-items-mid li');
-    $todoItemsRight = $('#shown-items-right li');
+    const $todoItemsLeft = $('#shown-items-left li');
+    const $todoItemsMid = $('#shown-items-mid li');
+    const $todoItemsRight = $('#shown-items-right li');
 
 
     // Make sure all items in the respective lists have the right 'tag'
@@ -468,17 +458,17 @@ $(function () {
 
     // Go through the list item, grab the ID then push into the array
     $todoItemsLeft.each(function () {
-      var id = $(this).attr('id');
+      const id = $(this).attr('id');
       order.push(id);
     });
 
     $todoItemsMid.each(function () {
-      var id = $(this).attr('id');
+      const id = $(this).attr('id');
       order.push(id);
     });
 
     $todoItemsRight.each(function () {
-      var id = $(this).attr('id');
+      const id = $(this).attr('id');
       order.push(id);
     });
 
