@@ -17,8 +17,29 @@
 
 /* GENERAL */
 
+/* FLUID TESTING */
+#fluid-bg {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 0;
+  pointer-events: none;
+  display: block;
+}
+
+#top-row,
+#bottom-row,
+#customize-corner,
+#update-footer,
+#info-corner {
+  position: relative;
+  z-index: 1;
+}
+
 #main-background-image {
   background-image:url('');
+  /* z-index: -1; */
 }
 
 * {
