@@ -3,7 +3,7 @@
 
 $(function () {
 
-  const browser = (window.chrome) ? window.chrome : window.browser
+  const browser = (window.browser) ?? window.chrome;
 
   let il = 1;
   let im = 1;
@@ -15,9 +15,8 @@ $(function () {
   let j = 0;
   let k;
 
-  const $formLeft = $('#todo-form-left');
-  const $formMid = $('#todo-form-mid');
-  const $formRight = $('#todo-form-right');
+  const forms = [$('#todo-form-left'), $('#todo-form-mid'), $('#todo-form-right')]
+  const itemLists = [$('#shown-items-left'), $('#shown-items-mid'), $('#shown-items-right')]
 
   const $removeLink = $('#shown-items-left li a');
 
@@ -33,13 +32,6 @@ $(function () {
   const order = [];
   let orderList;
 
-  browser.storage.sync.get(listCounters, function (result) {
-    il = (result['todo-counter-left']) ? result['todo-counter-left'] + 1 : 1;
-    im = (result['todo-counter-mid']) ? result['todo-counter-mid'] + 1 : 1;
-    ir = (result['todo-counter-right']) ? result['todo-counter-right'] + 1 : 1;
-    dones = (result['todo-dones']) ? result['todo-dones'] : [];
-  });
-
   const checkIfCompleted = (toDoKey) => dones.indexOf(toDoKey) > -1;
 
   // Holds the HTML for a todo card (HTML might appear elsewhere as well)
@@ -47,9 +39,8 @@ $(function () {
     const done = checkIfCompleted(toDoKey) ? 'checked' : '';
     const fontColorToUse = done === 'checked' ? 'shadow-color' : 'main-font-color';
     const borderColorToUse = done === 'checked' ? 'shadow-border-color' : 'main-border-color';
-
     return `
-      <li id="${toDoKey}" class="todo-card main-bgcolor ${fontColorToUse} ${borderColorToUse}">
+      <li id="${toDoKey}" class="todo-card main-bg-color ${fontColorToUse} ${borderColorToUse}">
         <div class="squaredThree">
           <input id="${toDoKey}-check" type="checkbox" name="check" ${done} />
           <label for="${toDoKey}-check"></label>
@@ -64,73 +55,75 @@ $(function () {
     `;
   };
 
+  const renderTodoList = (_orderList, $list) => {
+    browser.storage.sync.get(_orderList, (result) => {
+      _orderList.forEach(key => {
+        $list.append(constructToDoCard(key, result[key]));
+        if (checkIfCompleted(key)) {
+          $(`#${key}`).find('.todo-text').addClass('todo-card-done');
+        }
+      });
+      $("li a").fadeOut();
+    });
+  };
+
+  browser.storage.sync.get(listCounters, function (result) {
+    il = (result['todo-counter-left']) ? result['todo-counter-left'] + 1 : 1;
+    im = (result['todo-counter-mid']) ? result['todo-counter-mid'] + 1 : 1;
+    ir = (result['todo-counter-right']) ? result['todo-counter-right'] + 1 : 1;
+    dones = (result['todo-dones']) ? result['todo-dones'] : [];
+  });
+
   // Load todo list keys
   browser.storage.sync.get('todo-orders', function (retrieved) {
     orderList = retrieved['todo-orders'];
     orderList = orderList ? orderList.split(',') : [];
 
     // Sort todo list keys into their component lists
-    var orderListLeft = [],
-      orderListMid = [],
-      orderListRight = [];
-    for (ll = 0; ll < orderList.length; ll++) {
-      if (orderList[ll].indexOf('left') >= 0) {
-        orderListLeft.push(orderList[ll]);
-      } else if (orderList[ll].indexOf('mid') >= 0) {
-        orderListMid.push(orderList[ll]);
-      } else if (orderList[ll].indexOf('right') >= 0) {
-        orderListRight.push(orderList[ll]);
+    const orderListLeft = [];
+    const orderListMid = [];
+    const orderListRight = []
+    for (const todoKey of orderList) {
+      if (todoKey.indexOf('left') >= 0) {
+        orderListLeft.push(todoKey);
+      }
+      else if (todoKey.indexOf('mid') >= 0) {
+        orderListMid.push(todoKey);
+      }
+      else if (todoKey.indexOf('right') >= 0) {
+        orderListRight.push(todoKey);
       }
     }
-
     // Render existing todo items into the three separate lists
-    browser.storage.sync.get(orderListLeft, function (result) {
-      orderListLeft.forEach(function (key) {
-        $('#shown-items-left').append(constructToDoCard(key, result[key]));
-        if (checkIfCompleted(key)) {
-          $('#' + key).find('.todo-text').addClass('todo-card-done');
-        }
-      });
-      $('li a').fadeOut();
-    });
-
-    browser.storage.sync.get(orderListMid, function (result) {
-      orderListMid.forEach(function (key) {
-        $('#shown-items-mid').append(constructToDoCard(key, result[key]));
-        if (checkIfCompleted(key)) {
-          $('#' + key).find('.todo-text').addClass('todo-card-done');
-        }
-      });
-      $('li a').fadeOut();
-    });
-
-    browser.storage.sync.get(orderListRight, function (result) {
-      orderListRight.forEach(function (key) {
-        $('#shown-items-right').append(constructToDoCard(key, result[key]));
-        if (checkIfCompleted(key)) {
-          $('#' + key).find('.todo-text').addClass('todo-card-done');
-        }
-      });
-      $('li a').fadeOut();
-      // ScrollMessage();
-    });
-
+    renderTodoList(orderListLeft, $("#shown-items-left"));
+    renderTodoList(orderListMid, $("#shown-items-mid"));
+    renderTodoList(orderListRight, $("#shown-items-right"));
   });
 
   // What happens when you check the checkbox...
   $('.shown-items').on('change', 'input[type=checkbox]', function () {
-    const toDoKey = $(this).parent().parent().attr('id');
+    const $toDoLiItemEl = $(this).closest("li");
+    const $toDoTextDiv = $toDoLiItemEl.find('.todo-text');
+    const toDoKey = $toDoLiItemEl.attr('id');
+
+    const shadowClassPair = ["shadow-color", "shadow-border-color"];
+    const fontBorderClassPair = ["main-font-color", "main-border-color"]
+
+    function updateClasses($el, classPairToAdd, classPairToRemove) {
+      $el.addClass(classPairToAdd[0]).addClass(classPairToAdd[1])
+        .removeClass(classPairToRemove[0]).removeClass(classPairToRemove[1]);
+    }
+
     if ($(this).is(':checked') === true) {
-      $(this).parent().parent()
-        .addClass('shadow-color').addClass('shadow-border-color')
-        .removeClass('main-font-color').removeClass('main-border-color');
-      $(this).parent().parent().find('.todo-text').addClass('todo-card-done');
-      dones.push(toDoKey);
-    } else {
-      $(this).parent().parent()
-        .addClass('main-font-color').addClass('main-border-color')
-        .removeClass('shadow-color').removeClass('shadow-border-color');
-      $(this).parent().parent().find('.todo-text').removeClass('todo-card-done');
+      updateClasses($toDoLiItemEl, shadowClassPair, fontBorderClassPair);
+      $toDoTextDiv.addClass('todo-card-done');
+      if (!checkIfCompleted(toDoKey)) {
+        dones.push(toDoKey);
+      }
+    }
+    else {
+      updateClasses($toDoLiItemEl, fontBorderClassPair, shadowClassPair);
+      $toDoTextDiv.removeClass('todo-card-done');
       if (checkIfCompleted(toDoKey)) {
         dones.splice(dones.indexOf(toDoKey), 1);
       }
@@ -141,64 +134,31 @@ $(function () {
   });
 
   // Add todo
-  $formLeft.submit(function (e) {
-    e.preventDefault();
-    $.publish('/add/', []);
-  });
-
-  $formMid.submit(function (e) {
-    e.preventDefault();
-    $.publish('/add/', []);
-  });
-
-  $formRight.submit(function (e) {
-    e.preventDefault();
-    $.publish('/add/', []);
-  });
+  forms.forEach($form => {
+    $form.submit(function (e) {
+      e.preventDefault();
+      $.publish("/add/", [])
+    })
+  })
 
   // Remove todo
-  $itemListLeft.delegate('a', 'click', function (e) {
-    var $this = $(this);
-    e.preventDefault();
-    $.publish('/remove/', [$this]);
-  });
-
-  $itemListMid.delegate('a', 'click', function (e) {
-    var $this = $(this);
-    e.preventDefault();
-    $.publish('/remove/', [$this]);
-  });
-
-  $itemListRight.delegate('a', 'click', function (e) {
-    var $this = $(this);
-
-    e.preventDefault();
-    $.publish('/remove/', [$this]);
+  itemLists.forEach($itemList => {
+    $itemList.on('click', 'a', function (e) {
+      const $this = $(this);
+      e.preventDefault();
+      $.publish('/remove/', [$this]);
+    })
   });
 
   // Sort todo
-  $itemListLeft.sortable({
-    revert: true,
-    connectWith: ['#shown-items-mid, #shown-items-right'],
-    stop: function () {
-      $.publish('/regenerate-list/', []);
-    }
-  });
-
-  $itemListMid.sortable({
-    revert: true,
-    connectWith: ['#shown-items-left, #shown-items-right'],
-    stop: function () {
-      $.publish('/regenerate-list/', []);
-    }
-  });
-
-  $itemListRight.sortable({
-    revert: true,
-    connectWith: ['#shown-items-left, #shown-items-mid'],
-    stop: function () {
-      $.publish('/regenerate-list/', []);
-    }
+  itemLists.forEach($itemList => {
+    $itemList.sortable({
+      revert: true,
+      connectWith: ['#shown-items-left, #shown-items-mid, #shown-items-right'],
+      stop: function () {
+        $.publish('/regenerate-list/', []);
+      }
+    });
   });
 
   // Edit and save todo
@@ -206,73 +166,68 @@ $(function () {
     buttons: '',
     cancelOnBlur: true,
     save: function (e, data) {
-      var newTodoID = $(this).parent().attr('id'),
-        objToSave = {};
-      objToSave[newTodoID] = data.value;
-      browser.storage.sync.set(objToSave);
+      const newTodoID = $(this).parent().attr('id');
+      browser.storage.sync.set({ [newTodoID]: data.value });
     }
   });
 
-  // Sweep done
-  $sweepDone.click(function (e) {
-    e.preventDefault();
-    var listToImpact = e.originalEvent.srcElement.getAttribute('data-list');
-    $.publish('/clear-all/', [listToImpact, false]);
-  });
+  function bindClearAction($elements, clearAll) {
+    $elements.click(function (e) {
+      e.preventDefault();
+      const listToImpact = e.originalEvent.srcElement.getAttribute('data-list');
+      $.publish('/clear-all/', [listToImpact, clearAll]);
+    });
+  }
 
-  // Clear all
-  $clearAll.click(function (e) {
-    e.preventDefault();
-    var listToImpact = e.originalEvent.srcElement.getAttribute('data-list');
-    $.publish('/clear-all/', [listToImpact, true]);
-  });
+  // Sweep done / Clear all
+  bindClearAction($sweepDone, false);
+  bindClearAction($clearAll, true);
 
   // Fade In and Fade Out the Remove link on hover
-  $itemListLeft.delegate('li', 'mouseover mouseout', function (event) {
-    var $this = $(this).find('a');
-
-    if (event.type === 'mouseover') {
-      $this.stop(true, true).fadeIn();
-    } else {
-      $this.stop(true, true).fadeOut();
-    }
-  });
-
-  $itemListMid.delegate('li', 'mouseover mouseout', function (event) {
-    var $this = $(this).find('a');
-
-    if (event.type === 'mouseover') {
-      $this.stop(true, true).fadeIn();
-    } else {
-      $this.stop(true, true).fadeOut();
-    }
-  });
-
-  $itemListRight.delegate('li', 'mouseover mouseout', function (event) {
-    var $this = $(this).find('a');
-
-    if (event.type === 'mouseover') {
-      $this.stop(true, true).fadeIn();
-    } else {
-      $this.stop(true, true).fadeOut();
-    }
+  itemLists.forEach($itemList => {
+    $itemList.on('mouseover mouseout', 'li', function (event) {
+      const $this = $(this).find('a').stop(true, true);
+      if (event.type === 'mouseover') {
+        $this.fadeIn();
+      } else {
+        $this.fadeOut();
+      }
+    });
   });
 
   // Subscribes
+
+  function incrementListCounter(listID) {
+    switch (listID) {
+      case 'left':
+        il++;
+        browser.storage.sync.set({ 'todo-counter-left': il });
+        break;
+      case 'mid':
+        im++;
+        browser.storage.sync.set({ 'todo-counter-mid': im });
+        break;
+      case 'right':
+        ir++;
+        browser.storage.sync.set({ 'todo-counter-right': ir });
+        break;
+    }
+  }
+
+
   $.subscribe('/add/', function () {
-    var todoToAdd = null;
+    let todoToAdd = null;
     for (ind = 0; ind < $newTodo.length; ind++) {
-      var todoBox = $newTodo[ind];
+      const todoBox = $newTodo[ind];
       if (todoBox.value !== "") {
         todoToAdd = $newTodo[ind];
       }
     }
     if (todoToAdd) {
-
       // Figure out which list it's in
-      var listID = todoToAdd.getAttribute('data-list'),
-        listToImpact,
-        listCounter;
+      const listID = todoToAdd.getAttribute('data-list');
+      let listToImpact;
+      let listCounter;
 
       switch (listID) {
         case 'left':
@@ -290,54 +245,27 @@ $(function () {
       }
 
       // Take the value of the input field and save it to localStorage
-      var newTodoID = "todo-" + listID + '-' + listCounter;
-      console.log(`appending new item, newTodoID = ${newTodoID}`)
-
-      var objToSave = {};
-      objToSave[newTodoID] = todoToAdd.value;
-      browser.storage.sync.set(objToSave);
+      const newTodoID = `todo-${listID}-${listCounter}`;
+      browser.storage.sync.set({ [newTodoID]: todoToAdd.value });
 
       // Set the to-do max counter so on page refresh it keeps going up instead of reset
-      var counterToSave = {},
-        counterKey = "todo-counter-" + listID;
-      counterToSave[counterKey] = listCounter;
-      browser.storage.sync.set(counterToSave);
+      const counterKey = `todo-counter-${listID}`;
+      browser.storage.sync.set({ [counterKey]: listCounter });
 
       // Append a new list item with the value of the new todo list
       browser.storage.sync.get(newTodoID, function (result) {
-        console.log(`appending new item, result = ${result}, newTodoID = ${newTodoID}`)
         listToImpact.append(constructToDoCard(newTodoID, result[newTodoID]));
         $('li a:visible').fadeOut();
-
         $.publish('/regenerate-list/', []);
       });
 
       // Hide the new list, then fade it in for effects
-      $("#todo-" + listID + '-' + listCounter).css('display', 'none').fadeIn();
+      $(`#${newTodoID}`).css('display', 'none').fadeIn();
 
       // Empty the input field
       todoToAdd.value = "";
 
-      switch (listID) {
-        case 'left':
-          il++;
-          browser.storage.sync.set({
-            'todo-counter-left': il
-          });
-          break;
-        case 'mid':
-          im++;
-          browser.storage.sync.set({
-            'todo-counter-mid': im
-          });
-          break;
-        case 'right':
-          ir++;
-          browser.storage.sync.set({
-            'todo-counter-right': ir
-          });
-          break;
-      }
+      incrementListCounter(listID);
       // ScrollMessage();
     }
   });
@@ -359,7 +287,6 @@ $(function () {
     // Fade out the list item then remove from DOM
     $this.parent().fadeOut(function () {
       $this.parent().parent().remove();
-
       $.publish('/regenerate-list/', []);
     });
 
@@ -367,8 +294,8 @@ $(function () {
   });
 
   const reassignToList = (inputDict) => {
-    var target = inputDict['target'],
-      items = inputDict['items'];
+    const target = inputDict['target'];
+    const items = inputDict['items'];
 
     switch (target) {
       case 'left':
@@ -387,116 +314,57 @@ $(function () {
         // Reassign ID
         let oldValue;
         const oldID = this.id;
-        const newID = `todo-${target}-${listCounter}`; 
+        const newID = `todo-${target}-${listCounter}`;
         this.id = newID;
 
-        switch (target) {
-          case 'left':
-            il++;
-            browser.storage.sync.set({
-              'todo-counter-left': il
-            });
-            break;
-          case 'mid':
-            im++;
-            browser.storage.sync.set({
-              'todo-counter-mid': im
-            });
-            break;
-          case 'right':
-            ir++;
-            browser.storage.sync.set({
-              'todo-counter-right': ir
-            });
-            break;
-        }
+        incrementListCounter(target);
 
         // Store todo item under new key
         browser.storage.sync.get(oldID, function (retrieved) {
           oldValue = retrieved[oldID];
-          const objToSave = {};
-          objToSave[newID] = oldValue;
-          browser.storage.sync.set(objToSave);
+          browser.storage.sync.set({ [newID]: oldValue });
         });
 
         if (checkIfCompleted(oldID)) { // If the todo was already done
           dones.splice(dones.indexOf(oldID), 1); // Remove the old todo ID from the dones list
           dones.push(newID); // and push in the new one
-          browser.storage.sync.set({
-            'todo-dones': dones
-          });
+          browser.storage.sync.set({ 'todo-dones': dones });
         }
-
       }
     });
     // ScrollMessage();
   };
 
   $.subscribe('/regenerate-list/', function () {
-    const $todoItemsLeft = $('#shown-items-left li');
-    const $todoItemsMid = $('#shown-items-mid li');
-    const $todoItemsRight = $('#shown-items-right li');
+    const todoItemsListPositions = ['left', 'mid', 'right']
 
-
-    // Make sure all items in the respective lists have the right 'tag'
-    // (in event of cross-list movement)
-    reassignToList({
-      'target': 'left',
-      'items': $todoItemsLeft
-    });
-    reassignToList({
-      'target': 'mid',
-      'items': $todoItemsMid
-    });
-    reassignToList({
-      'target': 'right',
-      'items': $todoItemsRight
-    });
+    // Make sure all items in the respective lists have the right 'tag' (in event of cross-list movement)
+    todoItemsListPositions.forEach(list => {
+      reassignToList({
+        'target': list,
+        'items': $(`#shown-items-${list} li`)
+      });
+    })
 
     // Empty the order array
     order.length = 0;
 
     // Go through the list item, grab the ID then push into the array
-    $todoItemsLeft.each(function () {
-      const id = $(this).attr('id');
-      order.push(id);
-    });
-
-    $todoItemsMid.each(function () {
-      const id = $(this).attr('id');
-      order.push(id);
-    });
-
-    $todoItemsRight.each(function () {
-      const id = $(this).attr('id');
-      order.push(id);
-    });
+    todoItemsListPositions.forEach(list => {
+      $(`#shown-items-${list} li`).each(function () {
+        const id = $(this).attr('id');
+        order.push(id);
+      });
+    })
 
     // Convert the array into string and save to localStorage
-    browser.storage.sync.set({
-      'todo-orders': order.join(',')
-    });
+    browser.storage.sync.set({ 'todo-orders': order.join(',') });
   });
 
   $.subscribe('/clear-all/', function (listToImpactName, clearAll) {
-
-    var $todoListLi = $('#shown-items-left li'),
-      listToImpact;
-
-    switch (listToImpactName) {
-      case 'left':
-        itemsToImpact = $('#shown-items-left li a');
-        break;
-      case 'mid':
-        itemsToImpact = $('#shown-items-mid li a');
-        break;
-      case 'right':
-        itemsToImpact = $('#shown-items-right li a');
-        break;
-    }
-
+    const itemsToImpact = $(`#shown-items-${listToImpactName} li a`);
     itemsToImpact.each(function (index) {
-      var parentId = $(this).parent().parent().attr('id');
+      const parentId = $(this).closest('li').attr('id');
       if (clearAll || (!clearAll && checkIfCompleted(parentId))) {
         $.publish('/remove/', [$(this)]);
       }

@@ -1,17 +1,40 @@
+:root {
+  --bg-color: #222222;
+  --font-color: #ffffff;
+  --shadow-color: rgba(255, 255, 255, 0.3);
+  --border-color: #ffffff;
+  --shadow-border-color: rgba(255, 255, 255, 0.3);
+
+  --font-family-base: system-ui, "Helvetica Neue", "Open Sans", sans-serif;
+
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 2rem;
+  --space-xl: 3rem;
+
+  --font-size-sm: 0.75rem;
+  --font-size-md: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.5rem;
+  --font-size-2xl: 3rem;
+}
+
+
 /* TYPOGRAPHY */
 
 @font-face {
   font-family: 'Open Sans';
   font-style: normal;
   font-weight: 400;
-  src: local('Open Sans'), local('OpenSans'), url('../fonts/OpenSans.ttf') format('truetype');
+  src: local('Open Sans'), local('OpenSans'), url('./fonts/OpenSans.ttf') format('truetype');
 }
 
 @font-face {
   font-family: 'Open Sans';
   font-style: normal;
   font-weight: 700;
-  src: local('Open Sans Bold'), local('OpenSans-Bold'), url('../fonts/OpenSans-Bold.ttf') format('truetype');
+  src: local('Open Sans Bold'), local('OpenSans-Bold'), url('./fonts/OpenSans-Bold.ttf') format('truetype');
 }
 
 
@@ -46,11 +69,11 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
-  font-family: system-ui, 'Helvetica Neue', 'Open Sans', sans-serif;
+  font-family: var(--font-family-base); /* system-ui, 'Helvetica Neue', 'Open Sans', sans-serif; */
 }
 
 body {
-  font-size: 1.125rem;
+  font-size: var(--font-size-lg);
   max-width: 130rem;
   padding-left: 10%;
   padding-right: 10%;
@@ -71,8 +94,8 @@ body {
 
 /* Colors */
 
-.main-bgcolor {
-  background-color: #222222;
+.main-bg-color {
+  background-color: var(--bg-color);
 }
 
 .main-font-color {
@@ -84,7 +107,7 @@ body {
 }
 
 .main-border-color {
-  border-color: white;
+  border-color: var(--border-color);
 }
 
 .shadow-border-color {
@@ -269,6 +292,7 @@ ul li:active {
 .edit-priorities {
   text-align: center;
   display: none;
+  color: deeppink;
 }
 
 form {
@@ -320,6 +344,7 @@ input[type="text"]:focus {
   left: 0;
   bottom: 0;
   margin: 1rem;
+  z-index: 1000;
 }
 
 #customize-button {
@@ -329,12 +354,17 @@ input[type="text"]:focus {
 }
 
 #customize-selectors {
+  position: relative;
   font-size: .75rem;
   display: none;
   border: 1px solid;
   padding: .5rem;
-  overflow: auto;
+  overflow: visible;
   box-shadow: 0 .5rem 1rem #000;
+}
+
+.colpick {
+  z-index: 99999 !important;
 }
 
 #workday-checkbox {

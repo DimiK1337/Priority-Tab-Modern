@@ -1,0 +1,91 @@
+//Prioritab_source_code/src/features/theme.js
+
+function setColorProperty(classes, propToChange, newValue) {
+    const selectors = Array.isArray(classes)
+        ? classes.map(className => `.${className}`).join(", ")
+        : `.${classes}`;
+
+    const style = $(`<style>${selectors} { ${propToChange}: ${newValue}; }</style>`);
+
+    $("html > head").append(style);
+}
+
+function setColors() {
+    browser.storage.sync.get(
+        PRIORITAB_DEFAULTS.storageKeys.userBackgroundColor,
+        function (result) {
+            const bgColor = result[PRIORITAB_DEFAULTS.storageKeys.userBackgroundColor] ?? PRIORITAB_DEFAULTS.colors.bg;
+            setColorProperty("main-bg-color", "background-color", bgColor);
+        }
+    );
+
+    browser.storage.sync.get(
+        PRIORITAB_DEFAULTS.storageKeys.userFontColor,
+        function (result) {
+            const fontColor = result[PRIORITAB_DEFAULTS.storageKeys.userFontColor] ?? PRIORITAB_DEFAULTS.colors.font;
+            setColorProperty(["main-font-color", "main-border-color"], "color", fontColor);
+        }
+    );
+
+    browser.storage.sync.get(
+        PRIORITAB_DEFAULTS.storageKeys.userShadowColor,
+        function (result) {
+            const shadowColor = result[PRIORITAB_DEFAULTS.storageKeys.userShadowColor] ?? PRIORITAB_DEFAULTS.colors.shadow;
+            setColorProperty(["shadow-color", "shadow-border-color"], "color", shadowColor);
+        }
+    );
+}
+
+function setDateTimeFormat() {
+    browser.storage.sync.get(
+        { [PRIORITAB_DEFAULTS.storageKeys.userDateFormat]: "MMM D, YYYY" },
+        function (result) {
+            PRIORITAB_STATE.dateFormat = result[PRIORITAB_DEFAULTS.storageKeys.userDateFormat];
+            getDate();
+            $("#date-format-input").val(PRIORITAB_STATE.dateFormat);
+        }
+    );
+
+    browser.storage.sync.get(
+        { [PRIORITAB_DEFAULTS.storageKeys.userTimeFormat]: "h:mm:ss A" },
+        function (result) {
+            PRIORITAB_STATE.timeFormat =
+                result[PRIORITAB_DEFAULTS.storageKeys.userTimeFormat];
+
+            getTime();
+            $("#time-format-input").val(PRIORITAB_STATE.timeFormat);
+        }
+    );
+}
+
+function createColorPickerInstance(
+    buttonID,
+    defaultColor,
+    cssClasses,
+    storageSyncKey,
+    isBackgroundColor = false
+) {
+    const buttonIDSelector = buttonID.startsWith("#")
+        ? buttonID
+        : `#${buttonID}`;
+
+    const instance = $(buttonIDSelector).colpick({
+        layout: "full",
+        submit: false,
+        colorScheme: "dark",
+        color: defaultColor,
+        onChange: function (hsb, hex, rgb, el, bySetColor) {
+            const propType = isBackgroundColor ? "background-color" : "color";
+            const nextColor = `#${hex}`;
+
+            setColorProperty(cssClasses, propType, nextColor);
+            browser.storage.sync.set({ [storageSyncKey]: nextColor });
+        },
+        onHide: function (cpobj) {
+            $(".color-selector-label").css("visibility", "visible");
+            $(".color-selector-label").css("font-weight", "normal");
+        }
+    });
+
+    return instance;
+}
