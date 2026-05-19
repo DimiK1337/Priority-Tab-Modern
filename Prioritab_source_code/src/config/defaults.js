@@ -28,6 +28,8 @@ const PRIORITAB_DEFAULTS = {
         userWorkdayStart: "user-workday-start",
         userWorkdayEnd: "user-workday-end",
         userBackgroundImage: "user_bg_img",
+        userFluidAnimationEnabled: "user-fluid-animation-enabled",
+        userFluidShowBackgroundImage: "user-fluid-show-background-image",
         update20151231: "update-20151231"
     }
 };

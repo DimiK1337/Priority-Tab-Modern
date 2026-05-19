@@ -50,5 +50,4 @@ window.onload = function () {
     );
 
     initFluidBackground();
-    bindFluidToCursor();
 };
