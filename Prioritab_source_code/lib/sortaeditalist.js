@@ -52,15 +52,17 @@ $(function () {
 
   const checkIfCompleted = (toDoID) => state.dones.includes(toDoID);
 
-  // Holds the HTML for a todo card (HTML might appear elsewhere as well)
   const constructToDoCard = function (toDoKey, toDoText) {
-    const done = checkIfCompleted(toDoKey) ? 'checked' : '';
-    const fontColorToUse = done === 'checked' ? 'shadow-color' : 'main-font-color';
-    const borderColorToUse = done === 'checked' ? 'shadow-border-color' : 'main-border-color';
+    const isDone = checkIfCompleted(toDoKey);
+
     return `
-      <li id="${toDoKey}" class="todo-card main-bg-color ${fontColorToUse} ${borderColorToUse}" tabindex='0'>
+      <li 
+        id="${toDoKey}" 
+        class="todo-card main-bg-color main-font-color main-border-color ${isDone ? 'todo-card-done-state' : ''}" 
+        tabindex="0"
+      >
         <div class="squaredThree">
-          <input id="${toDoKey}-check" type="checkbox" name="check" ${done} />
+          <input id="${toDoKey}-check" type="checkbox" name="check" ${isDone ? 'checked' : ''} />
           <label for="${toDoKey}-check"></label>
         </div>
         <div class="todo-text">${toDoText}</div>
@@ -77,42 +79,37 @@ $(function () {
     browser.storage.sync.get(_orderList, (result) => {
       _orderList.forEach(key => {
         $list.append(constructToDoCard(key, result[key]));
-        if (checkIfCompleted(key)) {
-          $(`#${key}`).find('.todo-text').addClass('todo-card-done');
-        }
       });
-      //$("li a").fadeOut();
     });
   };
 
-  browser.storage.sync.get(listCounters, function (result) {
+  browser.storage.sync.get([...listCounters, storageKeys.orders], function (result) {
     listNames.forEach(listName => {
-      const counterValue = result[storageKeys.counter(listName)]
+      const counterValue = result[storageKeys.counter(listName)];
       state.counters[listName] = counterValue ? counterValue + 1 : 1;
-    })
-    state.dones = result[storageKeys.dones] ?? []
+    });
 
-  });
+    state.dones = result[storageKeys.dones] ?? [];
 
-  // Load todo list keys
-  browser.storage.sync.get(storageKeys.orders, function (retrieved) {
-    const orderList = retrieved[storageKeys.orders] ? retrieved[storageKeys.orders].split(",") : [];
+    const orderList = result[storageKeys.orders]
+      ? result[storageKeys.orders].split(",")
+      : [];
 
     // Sort todo list keys into their component lists
     const orderListLeft = [];
     const orderListMid = [];
-    const orderListRight = []
+    const orderListRight = [];
+
     for (const todoKey of orderList) {
-      if (todoKey.indexOf('left') >= 0) {
+      if (todoKey.includes('left')) {
         orderListLeft.push(todoKey);
-      }
-      else if (todoKey.indexOf('mid') >= 0) {
+      } else if (todoKey.includes('mid')) {
         orderListMid.push(todoKey);
-      }
-      else if (todoKey.indexOf('right') >= 0) {
+      } else if (todoKey.includes('right')) {
         orderListRight.push(todoKey);
       }
     }
+
     // Render existing todo items into the three separate lists
     renderTodoList(orderListLeft, $("#shown-items-left"));
     renderTodoList(orderListMid, $("#shown-items-mid"));
@@ -122,31 +119,23 @@ $(function () {
   // What happens when you check the checkbox...
   $('.shown-items').on('change', 'input[type=checkbox]', function () {
     const $toDoLiItemEl = $(this).closest("li");
-    const $toDoTextDiv = $toDoLiItemEl.find('.todo-text');
     const toDoKey = $toDoLiItemEl.attr('id');
+    const isChecked = $(this).is(':checked');
 
-    const shadowClassPair = ["shadow-color", "shadow-border-color"];
-    const fontBorderClassPair = ["main-font-color", "main-border-color"]
+    if (isChecked) {
+      $toDoLiItemEl.addClass('todo-card-done-state');
 
-    function updateClasses($el, classPairToAdd, classPairToRemove) {
-      $el.addClass(classPairToAdd[0]).addClass(classPairToAdd[1])
-        .removeClass(classPairToRemove[0]).removeClass(classPairToRemove[1]);
-    }
-
-    if ($(this).is(':checked') === true) {
-      updateClasses($toDoLiItemEl, shadowClassPair, fontBorderClassPair);
-      $toDoTextDiv.addClass('todo-card-done');
       if (!checkIfCompleted(toDoKey)) {
         state.dones.push(toDoKey);
       }
-    }
-    else {
-      updateClasses($toDoLiItemEl, fontBorderClassPair, shadowClassPair);
-      $toDoTextDiv.removeClass('todo-card-done');
+    } else {
+      $toDoLiItemEl.removeClass('todo-card-done-state');
+
       if (checkIfCompleted(toDoKey)) {
         state.dones.splice(state.dones.indexOf(toDoKey), 1);
       }
     }
+
     browser.storage.sync.set({ [storageKeys.dones]: state.dones });
   });
 
