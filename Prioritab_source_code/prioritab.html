@@ -105,7 +105,6 @@
     </div>
   </div>
   <div id="customize-corner">
-
     <i id="customize-button" class="fa fa-cogs shadow-color" title="Customization"></i>
     <div id="customize-selectors" class="main-bgcolor">
       <h1 id="customize-corner-title">Customization</h1>
@@ -128,7 +127,7 @@
       <br />
       <div id="customize-bg-img">
         <h2>Background Image</h2>
-        <input type='file' id='verborgen_file' />
+        <input type='file' id='bg_img_file_input' />
         <input type="button" value="Upload" id="uploadButton" /><br><br>
         <input type="button" id="centerImgBackground" value="Center Image" name="background-image-center">
         <input type="button" id="removeBackgroundImg" value="Remove Background" name="background-image-remover">
@@ -194,36 +193,6 @@
       <span id="update-hide" class="shadow-color">Hide</span>
     </span>
   </div>
-  <div id="info-corner">
-    <i id="info-button" class="fa fa-info-circle shadow-color" title="Information Corner"></i>
-    <div id="info">
-      <p><img src="prioritab_logo_v2.svg" style="max-width:2rem;" alt="Prioritab Logo"></p>
-      <p>From <a href="http://www.bitsandbites.me/?utm_source=prioritab" class="shadow-color">bitsandbites.me</a>.</p>
-      <p>Much thanks for support from the <a href="https://github.com/thelac" class="shadow-color">Leather Apron
-          Club</a>,</p>
-      <p><a href="https://griffedge.github.io/" class="shadow-color">Griffen Edge</a> for design, code and logo
-        improvements,</p>
-      <p>Github user <a href="https://github.com/bitvitez" class="shadow-color">bitvitez</a>,</p>
-      <p><a href="http://web.koesbong.com/2011/01/24/sortable-and-editable-to-do-list-using-html5s-localstorage/"
-          class="shadow-color">Koes Bong</a> for the backbones of the sortable, editable lists,</p>
-      <p>the <a href="https://github.com/mrgrain/colpick" class="shadow-color">Colpick</a> color picker,</p>
-      <p>and <a href="https://chrome.google.com/webstore/detail/currently/ojhmphdkpgbibohbnpbfiefkgieacjmh?hl=en"
-          class="shadow-color">Currently</a> for design inspiration.</p>
-    </div>
-  </div>
-
-
-  <!-- <script src="lib/jquery.min.js"></script>
-  <script src="lib/jquery-ui.min.js"></script>
-  <script src="lib/jquery.inlineedit-prioritab.js"></script>
-
-  <script src="lib/moment.min.js"></script>
-  <script src="lib/pubsub.min.js"></script>
-  <script src="lib/storage-api.js"></script>
-  <script src="lib/sortaeditalist.js"></script>
-  <script src="lib/colpick.min.js"></script>
-  <script src="lib/fluid.min.js"></script>
-  <script src="prioritab.min.js"></script> -->
 
   <script src="lib/jquery.min.js"></script>
   <script src="lib/jquery-ui.min.js"></script>
@@ -235,6 +204,9 @@
   <script src="lib/sortaeditalist.js"></script>
   <script src="lib/colpick.min.js"></script>
   <script src="lib/fluid.min.js"></script>
+
+  <script src="src/utils/dom.js"></script>
+  <!-- <script src="src/utils/storage.js"></script> -->
 
   <script src="src/config/defaults.js"></script>
   <script src="src/features/clock.js"></script>

@@ -1,15 +1,18 @@
 //Prioritab_source_code/src/features/background-image.js
 
+
+
+//TODO: Clean this up
 function initBackgroundImage() {
     const bodyEl = document.querySelector("body");
 
-    $("#verborgen_file").hide();
+    $("#bg_img_file_input").hide();
 
     $("#uploadButton").on("click", function () {
-        $("#verborgen_file").click();
+        $("#bg_img_file_input").click();
     });
 
-    $("#verborgen_file").change(function () {
+    $("#bg_img_file_input").change(function () {
         const file = this.files[0];
         const reader = new FileReader();
 

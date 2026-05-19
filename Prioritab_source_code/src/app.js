@@ -49,8 +49,6 @@ window.onload = function () {
         PRIORITAB_DEFAULTS.storageKeys.userShadowColor
     );
 
-    
-
     initFluidBackground();
     bindFluidToCursor();
 };

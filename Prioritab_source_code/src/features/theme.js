@@ -4,9 +4,7 @@ function setColorProperty(classes, propToChange, newValue) {
     const selectors = Array.isArray(classes)
         ? classes.map(className => `.${className}`).join(", ")
         : `.${classes}`;
-
     const style = $(`<style>${selectors} { ${propToChange}: ${newValue}; }</style>`);
-
     $("html > head").append(style);
 }
 
@@ -65,9 +63,7 @@ function createColorPickerInstance(
     storageSyncKey,
     isBackgroundColor = false
 ) {
-    const buttonIDSelector = buttonID.startsWith("#")
-        ? buttonID
-        : `#${buttonID}`;
+    const buttonIDSelector = buttonID.startsWith("#") ? buttonID : `#${buttonID}`;
 
     const instance = $(buttonIDSelector).colpick({
         layout: "full",

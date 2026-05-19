@@ -2,37 +2,55 @@
 // http://web.koesbong.com/2011/01/24/sortable-and-editable-to-do-list-using-html5s-localstorage/
 
 $(function () {
-
   const browser = (window.browser) ?? window.chrome;
-
-  let il = 1;
-  let im = 1;
-  let ir = 1;
-  let dones = [];
 
   const listCounters = ['todo-counter-left', 'todo-counter-mid', 'todo-counter-right', 'todo-dones'];
 
-  let j = 0;
-  let k;
+  const storageKeys = {
+    orders: 'todo-orders',
+    dones: 'todo-dones',
+    counter(listName) {
+      return `todo-counter-${listName}`;
+    },
+    todo(listName, id) {
+      return `todo-${listName}-${id}`;
+    }
+  };
 
-  const forms = [$('#todo-form-left'), $('#todo-form-mid'), $('#todo-form-right')]
-  const itemLists = [$('#shown-items-left'), $('#shown-items-mid'), $('#shown-items-right')]
+  const state = {
+    counters: {
+      left: 1,
+      mid: 1,
+      right: 1
+    },
+    dones: [],
+    order: []
+  };
 
-  const $removeLink = $('#shown-items-left li a');
+  const lists = {
+    left: {
+      $form: $('#todo-form-left'),
+      $items: $('#shown-items-left')
+    },
+    mid: {
+      $form: $('#todo-form-mid'),
+      $items: $('#shown-items-mid')
+    },
+    right: {
+      $form: $('#todo-form-right'),
+      $items: $('#shown-items-right')
+    }
+  };
 
-  const $itemListLeft = $('#shown-items-left');
-  const $itemListMid = $('#shown-items-mid');
-  const $itemListRight = $('#shown-items-right');
+  const listNames = Object.keys(lists);
+  const forms = listNames.map(name => lists[name].$form);
+  const itemLists = listNames.map(name => lists[name].$items);
 
-  const $editable = $('.editable');
   const $sweepDone = $('.sweep-link');
   const $clearAll = $('.clear-all-link');
   const $newTodo = $('.todo');
 
-  const order = [];
-  let orderList;
-
-  const checkIfCompleted = (toDoKey) => dones.indexOf(toDoKey) > -1;
+  const checkIfCompleted = (toDoID) => state.dones.includes(toDoID);
 
   // Holds the HTML for a todo card (HTML might appear elsewhere as well)
   const constructToDoCard = function (toDoKey, toDoText) {
@@ -40,7 +58,7 @@ $(function () {
     const fontColorToUse = done === 'checked' ? 'shadow-color' : 'main-font-color';
     const borderColorToUse = done === 'checked' ? 'shadow-border-color' : 'main-border-color';
     return `
-      <li id="${toDoKey}" class="todo-card main-bg-color ${fontColorToUse} ${borderColorToUse}">
+      <li id="${toDoKey}" class="todo-card main-bg-color ${fontColorToUse} ${borderColorToUse}" tabindex='0'>
         <div class="squaredThree">
           <input id="${toDoKey}-check" type="checkbox" name="check" ${done} />
           <label for="${toDoKey}-check"></label>
@@ -68,16 +86,17 @@ $(function () {
   };
 
   browser.storage.sync.get(listCounters, function (result) {
-    il = (result['todo-counter-left']) ? result['todo-counter-left'] + 1 : 1;
-    im = (result['todo-counter-mid']) ? result['todo-counter-mid'] + 1 : 1;
-    ir = (result['todo-counter-right']) ? result['todo-counter-right'] + 1 : 1;
-    dones = (result['todo-dones']) ? result['todo-dones'] : [];
+    listNames.forEach(listName => {
+      const counterValue = result[storageKeys.counter(listName)]
+      state.counters[listName] = counterValue ? counterValue + 1 : 1;
+    })
+    state.dones = result[storageKeys.dones] ?? []
+
   });
 
   // Load todo list keys
-  browser.storage.sync.get('todo-orders', function (retrieved) {
-    orderList = retrieved['todo-orders'];
-    orderList = orderList ? orderList.split(',') : [];
+  browser.storage.sync.get(storageKeys.orders, function (retrieved) {
+    const orderList = retrieved[storageKeys.orders] ? retrieved[storageKeys.orders].split(",") : [];
 
     // Sort todo list keys into their component lists
     const orderListLeft = [];
@@ -118,19 +137,17 @@ $(function () {
       updateClasses($toDoLiItemEl, shadowClassPair, fontBorderClassPair);
       $toDoTextDiv.addClass('todo-card-done');
       if (!checkIfCompleted(toDoKey)) {
-        dones.push(toDoKey);
+        state.dones.push(toDoKey);
       }
     }
     else {
       updateClasses($toDoLiItemEl, fontBorderClassPair, shadowClassPair);
       $toDoTextDiv.removeClass('todo-card-done');
       if (checkIfCompleted(toDoKey)) {
-        dones.splice(dones.indexOf(toDoKey), 1);
+        state.dones.splice(state.dones.indexOf(toDoKey), 1);
       }
     }
-    browser.storage.sync.set({
-      'todo-dones': dones
-    });
+    browser.storage.sync.set({ [storageKeys.dones]: state.dones });
   });
 
   // Add todo
@@ -154,7 +171,10 @@ $(function () {
   itemLists.forEach($itemList => {
     $itemList.sortable({
       revert: true,
-      connectWith: ['#shown-items-left, #shown-items-mid, #shown-items-right'],
+      connectWith: ['#shown-items-left', '#shown-items-mid', '#shown-items-right'],
+      helper: 'clone',
+      appendTo: 'body',
+      zIndex: 10000,
       stop: function () {
         $.publish('/regenerate-list/', []);
       }
@@ -183,38 +203,60 @@ $(function () {
   bindClearAction($sweepDone, false);
   bindClearAction($clearAll, true);
 
-  // Fade In and Fade Out the Remove link on hover
+  // Keyboard for cycling the todo items
   itemLists.forEach($itemList => {
-    $itemList.on('mouseover mouseout', 'li', function (event) {
-      const $this = $(this).find('a').stop(true, true);
-      if (event.type === 'mouseover') {
-        $this.fadeIn();
-      } else {
-        $this.fadeOut();
+    $itemList.on('keydown', 'li.todo-card', function (e) {
+      const $item = $(this);
+
+      console.log("$item", $item, "e", e)
+
+      // Do not reorder while typing/editing inside child controls
+      const tagName = e.target.tagName.toLowerCase();
+      const isEditableTarget =
+        tagName === 'input' ||
+        tagName === 'textarea' ||
+        tagName === 'select' ||
+        e.target.isContentEditable;
+
+      if (isEditableTarget) {
+        return;
+      }
+
+      if (e.key === 'ArrowUp') {
+        e.preventDefault();
+
+        const $prev = $item.prev('li.todo-card');
+
+        if ($prev.length) {
+          $item.insertBefore($prev);
+          $item.focus();
+          $.publish('/regenerate-list/', []);
+        }
+      }
+
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+
+        const $next = $item.next('li.todo-card');
+
+        if ($next.length) {
+          $item.insertAfter($next);
+          $item.focus();
+          $.publish('/regenerate-list/', []);
+        }
       }
     });
   });
 
-  // Subscribes
 
-  function incrementListCounter(listID) {
-    switch (listID) {
-      case 'left':
-        il++;
-        browser.storage.sync.set({ 'todo-counter-left': il });
-        break;
-      case 'mid':
-        im++;
-        browser.storage.sync.set({ 'todo-counter-mid': im });
-        break;
-      case 'right':
-        ir++;
-        browser.storage.sync.set({ 'todo-counter-right': ir });
-        break;
-    }
+  // Subscribes
+  function incrementListCounter(listName) {
+    state.counters[listName]++;
+    browser.storage.sync.set({ [storageKeys.counter(listName)]: state.counters[listName] });
   }
 
 
+  // See if this can be moved to another file
   $.subscribe('/add/', function () {
     let todoToAdd = null;
     for (ind = 0; ind < $newTodo.length; ind++) {
@@ -225,32 +267,17 @@ $(function () {
     }
     if (todoToAdd) {
       // Figure out which list it's in
-      const listID = todoToAdd.getAttribute('data-list');
-      let listToImpact;
-      let listCounter;
-
-      switch (listID) {
-        case 'left':
-          listToImpact = $itemListLeft;
-          listCounter = il;
-          break;
-        case 'mid':
-          listToImpact = $itemListMid;
-          listCounter = im;
-          break;
-        case 'right':
-          listToImpact = $itemListRight;
-          listCounter = ir;
-          break;
-      }
+      const listName = todoToAdd.getAttribute('data-list');
+      const listToImpact = lists[listName].$items;
+      const listCounter = state.counters[listName]
 
       // Take the value of the input field and save it to localStorage
-      const newTodoID = `todo-${listID}-${listCounter}`;
+      const newTodoID = storageKeys.todo(listName, listCounter);
       browser.storage.sync.set({ [newTodoID]: todoToAdd.value });
 
       // Set the to-do max counter so on page refresh it keeps going up instead of reset
-      const counterKey = `todo-counter-${listID}`;
-      browser.storage.sync.set({ [counterKey]: listCounter });
+      const counterKey = `todo-counter-${listName}`;
+      browser.storage.sync.set({ [storageKeys.counter(listName)]: listCounter });
 
       // Append a new list item with the value of the new todo list
       browser.storage.sync.get(newTodoID, function (result) {
@@ -265,7 +292,7 @@ $(function () {
       // Empty the input field
       todoToAdd.value = "";
 
-      incrementListCounter(listID);
+      incrementListCounter(listName);
       // ScrollMessage();
     }
   });
@@ -278,10 +305,8 @@ $(function () {
 
     // Remove todo from the dones list, in case it was there
     if (checkIfCompleted(parentId)) {
-      dones.splice(dones.indexOf(parentId), 1);
-      browser.storage.sync.set({
-        'todo-dones': dones
-      });
+      state.dones.splice(state.dones.indexOf(parentId), 1);
+      browser.storage.sync.set({ [storageKeys.dones]: state.dones });
     }
 
     // Fade out the list item then remove from DOM
@@ -296,39 +321,24 @@ $(function () {
   const reassignToList = (inputDict) => {
     const target = inputDict['target'];
     const items = inputDict['items'];
-
-    switch (target) {
-      case 'left':
-        listCounter = il;
-        break;
-      case 'mid':
-        listCounter = im;
-        break;
-      case 'right':
-        listCounter = ir;
-        break;
-    }
-
+    const listCounter = state.counters[target]
     items.each(function () {
       if (this.id.indexOf(target) < 0) {
         // Reassign ID
-        let oldValue;
         const oldID = this.id;
-        const newID = `todo-${target}-${listCounter}`;
+        const newID = storageKeys.todo(target, listCounter);
         this.id = newID;
-
         incrementListCounter(target);
 
         // Store todo item under new key
         browser.storage.sync.get(oldID, function (retrieved) {
-          oldValue = retrieved[oldID];
-          browser.storage.sync.set({ [newID]: oldValue });
+          browser.storage.sync.set({ [newID]: retrieved[oldID] });
         });
 
         if (checkIfCompleted(oldID)) { // If the todo was already done
-          dones.splice(dones.indexOf(oldID), 1); // Remove the old todo ID from the dones list
-          dones.push(newID); // and push in the new one
-          browser.storage.sync.set({ 'todo-dones': dones });
+          state.dones.splice(state.dones.indexOf(oldID), 1); // Remove the old todo ID from the dones list
+          state.dones.push(newID); // and push in the new one
+          browser.storage.sync.set({ [storageKeys.dones]: state.dones });
         }
       }
     });
@@ -336,29 +346,22 @@ $(function () {
   };
 
   $.subscribe('/regenerate-list/', function () {
-    const todoItemsListPositions = ['left', 'mid', 'right']
-
     // Make sure all items in the respective lists have the right 'tag' (in event of cross-list movement)
-    todoItemsListPositions.forEach(list => {
-      reassignToList({
-        'target': list,
-        'items': $(`#shown-items-${list} li`)
-      });
-    })
+    listNames.forEach(list => reassignToList({ 'target': list, 'items': $(`#shown-items-${list} li`) }));
 
     // Empty the order array
-    order.length = 0;
+    state.order.length = 0;
 
     // Go through the list item, grab the ID then push into the array
-    todoItemsListPositions.forEach(list => {
+    listNames.forEach(list => {
       $(`#shown-items-${list} li`).each(function () {
         const id = $(this).attr('id');
-        order.push(id);
+        state.order.push(id);
       });
     })
 
     // Convert the array into string and save to localStorage
-    browser.storage.sync.set({ 'todo-orders': order.join(',') });
+    browser.storage.sync.set({ [storageKeys.orders]: state.order.join(',') });
   });
 
   $.subscribe('/clear-all/', function (listToImpactName, clearAll) {

@@ -16,19 +16,19 @@ function initFluidBackground() {
     resizeCanvas();
 
     PRIORITAB_STATE.fluid = new Fluid(canvas);
-    PRIORITAB_STATE.fluid.mapBehaviors({
+    /* PRIORITAB_STATE.fluid.mapBehaviors({
         //sim_resolution: 128,
         //dye_resolution: 512,
-        /* paused: false,
+        paused: false,
         multi_color: true,
         dissipation: 0.985,
         velocity: 0.99,
         pressure: 0.8,
         pressure_iteration: 20,
         curl: 25,
-        emitter_size: 0.35, */
+        emitter_size: 0.35,
         transparent: true
-    });
+    }); */
     PRIORITAB_STATE.fluid.activate();
 
     console.log("fluid", PRIORITAB_STATE.fluid);

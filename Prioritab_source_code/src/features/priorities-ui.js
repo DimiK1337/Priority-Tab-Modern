@@ -2,17 +2,11 @@
 
 function initPrioritiesUi() {
     browser.storage.sync.get([
-        PRIORITAB_DEFAULTS.storageKeys.userWorkdayStart,
+        PRIORITAB_DEFAULTS.storageKeys.userWorkdayStart, 
         PRIORITAB_DEFAULTS.storageKeys.userWorkdayEnd
     ], function (retrieved) {
-        const workdayStart =
-            retrieved[PRIORITAB_DEFAULTS.storageKeys.userWorkdayStart] ??
-            PRIORITAB_DEFAULTS.workday.start;
-
-        const workdayEnd =
-            retrieved[PRIORITAB_DEFAULTS.storageKeys.userWorkdayEnd] ??
-            PRIORITAB_DEFAULTS.workday.end;
-
+        const workdayStart = retrieved[PRIORITAB_DEFAULTS.storageKeys.userWorkdayStart] ?? PRIORITAB_DEFAULTS.workday.start;
+        const workdayEnd = retrieved[PRIORITAB_DEFAULTS.storageKeys.userWorkdayEnd] ?? PRIORITAB_DEFAULTS.workday.end;
         $("#workday-start-timeinput")[0].value = workdayStart;
         $("#workday-end-timeinput")[0].value = workdayEnd;
     });
@@ -35,7 +29,7 @@ function initPrioritiesUi() {
         $(this).parent().siblings(".edit-priorities-link").show();
     });
 
-    
+
 
     $(".customize-selector-label").click(function () {
         $(this).siblings(".color-selector-label").css("visibility", "hidden");
@@ -50,21 +44,13 @@ function initPrioritiesUi() {
                 PRIORITAB_DEFAULTS.colors.bg
         });
 
-        setColorProperty(
-            ["main-font-color", "main-border-color"],
-            "color",
-            PRIORITAB_DEFAULTS.colors.font
-        );
+        setColorProperty( ["main-font-color", "main-border-color"], "color", PRIORITAB_DEFAULTS.colors.font);
         browser.storage.sync.set({
             [PRIORITAB_DEFAULTS.storageKeys.userFontColor]:
                 PRIORITAB_DEFAULTS.colors.font
         });
 
-        setColorProperty(
-            ["shadow-color", "shadow-border-color"],
-            "color",
-            PRIORITAB_DEFAULTS.colors.shadow
-        );
+        setColorProperty( ["shadow-color", "shadow-border-color"], "color", PRIORITAB_DEFAULTS.colors.shadow);
         browser.storage.sync.set({
             [PRIORITAB_DEFAULTS.storageKeys.userShadowColor]:
                 PRIORITAB_DEFAULTS.colors.shadow

@@ -33,21 +33,14 @@ function countdownWorkday() {
         PRIORITAB_DEFAULTS.storageKeys.userWorkdayStart,
         PRIORITAB_DEFAULTS.storageKeys.userWorkdayEnd
     ], function (retrieved) {
-        const workdayStartString =
-            retrieved[PRIORITAB_DEFAULTS.storageKeys.userWorkdayStart] ??
-            PRIORITAB_DEFAULTS.workday.start;
+        const workdayStartString = retrieved[PRIORITAB_DEFAULTS.storageKeys.userWorkdayStart] ?? PRIORITAB_DEFAULTS.workday.start;
 
-        const workdayEndString =
-            retrieved[PRIORITAB_DEFAULTS.storageKeys.userWorkdayEnd] ??
-            PRIORITAB_DEFAULTS.workday.end;
+        const workdayEndString = retrieved[PRIORITAB_DEFAULTS.storageKeys.userWorkdayEnd] ?? PRIORITAB_DEFAULTS.workday.end;
 
         const workdayStartHour = workdayStartString.split(":")[0];
         const workdayStartMin = workdayStartString.split(":")[1];
         const workdayEndHour = workdayEndString.split(":")[0];
         const workdayEndMin = workdayEndString.split(":")[1];
-
-        let progressPCT = 0;
-
         const now = new Date();
         const workdayStart = new Date(
             now.getFullYear(),
@@ -64,7 +57,8 @@ function countdownWorkday() {
             parseInt(workdayEndHour, 10),
             parseInt(workdayEndMin, 10)
         );
-
+        
+        let progressPCT = 0;
         if (now < workdayStart) {
             progressPCT = 0;
         } else if (now > workdayEnd) {

@@ -20,17 +20,6 @@ function initPanels() {
         }
     });
 
-    $("#info-corner").hover(
-        function () {
-            $(this).children("#info-button").hide();
-            $(this).children("#info").fadeIn();
-        },
-        function () {
-            $(this).children("#info").hide();
-            $(this).children("#info-button").fadeIn();
-        }
-    );
-
     $("#customize-button").click(function () {
         $("#customize-button").hide();
         $("#customize-selectors").fadeIn();
