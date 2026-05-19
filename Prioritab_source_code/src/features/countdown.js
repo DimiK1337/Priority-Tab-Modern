@@ -1,31 +1,33 @@
 //Prioritab_source_code/src/features/countdown.js
-
 function checkDayCountdown() {
-    if ($( "#workday-checkbox" ).is(":checked")) {
-        browser.storage.sync.set({
-            [PRIORITAB_DEFAULTS.storageKeys.userUseWorkday]: "true"
-        });
+    const workdayCheckbox = document.querySelector("#workday-checkbox");
+    if (workdayCheckbox.checked) {
+        browser.storage.sync.set({[PRIORITAB_DEFAULTS.storageKeys.userUseWorkday]: "true"});
         countdownWorkday();
     } else {
-        browser.storage.sync.set({
-            [PRIORITAB_DEFAULTS.storageKeys.userUseWorkday]: "false"
-        });
+        browser.storage.sync.set({[PRIORITAB_DEFAULTS.storageKeys.userUseWorkday]: "false"});
         countdownDay();
     }
 }
 
+function setElementText(selector, text) {
+    const element = document.querySelector(selector);
+    if (!element) return;
+    element.textContent = text;
+}
+
+const createTodayTimeDate = (now, hour, minute) => new Date(now.getFullYear(), now.getMonth(), now.getDate(), hour, minute);
+
 function countdownDay() {
     const now = new Date();
-    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const todayStart = createTodayTimeDate(now, 0, 0);
+
     const progressMS = now - todayStart;
     const progressPCT = (progressMS / PRIORITAB_DEFAULTS.totalDayMS) * 100;
     const prettyPCT = Math.round(progressPCT);
 
-    $("#countdown-day .countdown-label").replaceWith(
-        "<div class='countdown-label'>...of the day</div>"
-    );
-
-    document.getElementById("countdown-day-amount").innerHTML = `${prettyPCT}%`;
+    setElementText("#countdown-day .countdown-label", "...of the day");
+    setElementText("#countdown-day-amount", `${prettyPCT}%`);
 }
 
 function countdownWorkday() {
@@ -33,32 +35,23 @@ function countdownWorkday() {
         PRIORITAB_DEFAULTS.storageKeys.userWorkdayStart,
         PRIORITAB_DEFAULTS.storageKeys.userWorkdayEnd
     ], function (retrieved) {
-        const workdayStartString = retrieved[PRIORITAB_DEFAULTS.storageKeys.userWorkdayStart] ?? PRIORITAB_DEFAULTS.workday.start;
+        const workdayStartString =
+            retrieved[PRIORITAB_DEFAULTS.storageKeys.userWorkdayStart] ??
+            PRIORITAB_DEFAULTS.workday.start;
 
-        const workdayEndString = retrieved[PRIORITAB_DEFAULTS.storageKeys.userWorkdayEnd] ?? PRIORITAB_DEFAULTS.workday.end;
+        const workdayEndString =
+            retrieved[PRIORITAB_DEFAULTS.storageKeys.userWorkdayEnd] ??
+            PRIORITAB_DEFAULTS.workday.end;
 
-        const workdayStartHour = workdayStartString.split(":")[0];
-        const workdayStartMin = workdayStartString.split(":")[1];
-        const workdayEndHour = workdayEndString.split(":")[0];
-        const workdayEndMin = workdayEndString.split(":")[1];
+        const [workdayStartHour, workdayStartMin] = workdayStartString.split(":").map((value) => parseInt(value, 10));
+        const [workdayEndHour, workdayEndMin] = workdayEndString.split(":").map((value) => parseInt(value, 10));
         const now = new Date();
-        const workdayStart = new Date(
-            now.getFullYear(),
-            now.getMonth(),
-            now.getDate(),
-            parseInt(workdayStartHour, 10),
-            parseInt(workdayStartMin, 10)
-        );
 
-        const workdayEnd = new Date(
-            now.getFullYear(),
-            now.getMonth(),
-            now.getDate(),
-            parseInt(workdayEndHour, 10),
-            parseInt(workdayEndMin, 10)
-        );
-        
+        const workdayStart = createTodayTimeDate(now,workdayStartHour,workdayStartMin);
+        const workdayEnd = createTodayTimeDate(now, workdayEndHour, workdayEndMin);
+
         let progressPCT = 0;
+
         if (now < workdayStart) {
             progressPCT = 0;
         } else if (now > workdayEnd) {
@@ -71,10 +64,7 @@ function countdownWorkday() {
 
         const prettyPCT = Math.round(progressPCT);
 
-        $("#countdown-day .countdown-label").replaceWith(
-            "<div class='countdown-label'>...of the workday</div>"
-        );
-
-        document.getElementById("countdown-day-amount").innerHTML = `${prettyPCT}%`;
+        setElementText("#countdown-day .countdown-label", "...of the workday");
+        setElementText("#countdown-day-amount", `${prettyPCT}%`);
     });
 }
