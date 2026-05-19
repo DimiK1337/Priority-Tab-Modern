@@ -10,11 +10,9 @@ window.PrioritabDom = {
   },
 
   on(element, eventName, selectorOrHandler, maybeHandler) {
-    if (!element) {
-      return;
-    }
+    if (!element) return;
 
-    if (typeof selectorOrHandler === 'function') {
+    if (typeof selectorOrHandler === "function") {
       element.addEventListener(eventName, selectorOrHandler);
       return;
     }
@@ -34,18 +32,16 @@ window.PrioritabDom = {
   },
 
   hide(element) {
-    if (!element) {
-      return;
-    }
-
-    element.style.display = 'none';
+    if (!element) return;
+    element.style.display = "none";
   },
 
-  show(element, display = 'block') {
-    if (!element) {
-      return;
-    }
-
+  show(element, display = "block") {
+    if (!element) return;
     element.style.display = display;
+  },
+
+  isVisible(element) {
+    return !element ? false : getComputedStyle(element).display !== "none";
   }
 };
