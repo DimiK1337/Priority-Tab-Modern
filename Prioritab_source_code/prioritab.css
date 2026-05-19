@@ -342,6 +342,22 @@ input[type="text"]:focus {
 }
 
 
+.todo-card .todo-card-right a {
+  display: inline;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 120ms ease-in-out, visibility 120ms ease-in-out;
+}
+
+.todo-card:hover .todo-card-right a,
+.todo-card.ui-state-hover .todo-card-right a,
+.todo-card:focus .todo-card-right a,
+.todo-card:focus-within .todo-card-right a {
+  opacity: 1;
+  visibility: visible;
+}
+
+
 /* COLOR CORNER */
 
 #customize-corner {

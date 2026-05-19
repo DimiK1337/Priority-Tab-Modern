@@ -81,7 +81,7 @@ $(function () {
           $(`#${key}`).find('.todo-text').addClass('todo-card-done');
         }
       });
-      $("li a").fadeOut();
+      //$("li a").fadeOut();
     });
   };
 
@@ -282,7 +282,7 @@ $(function () {
       // Append a new list item with the value of the new todo list
       browser.storage.sync.get(newTodoID, function (result) {
         listToImpact.append(constructToDoCard(newTodoID, result[newTodoID]));
-        $('li a:visible').fadeOut();
+        //$('li a:visible').fadeOut();
         $.publish('/regenerate-list/', []);
       });
 
