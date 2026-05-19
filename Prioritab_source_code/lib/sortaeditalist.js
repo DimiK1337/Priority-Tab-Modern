@@ -83,6 +83,81 @@ $(function () {
     });
   };
 
+  // Old Jquery edit inline
+  function startInlineTodoEdit(todoTextEl) {
+    if (todoTextEl.querySelector('input')) {
+      return;
+    }
+
+    const todoCard = todoTextEl.closest('li.todo-card');
+
+    if (!todoCard) {
+      return;
+    }
+
+    const todoID = todoCard.id;
+    const originalValue = todoTextEl.textContent;
+    let didCommit = false;
+
+    todoTextEl.classList.add('edit-in-progress');
+
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.value = originalValue;
+    input.className = 'todo-inline-edit-input main-bgcolor main-font-color';
+
+    todoTextEl.textContent = '';
+    todoTextEl.append(input);
+
+    function finishEdit(nextValue, shouldSave) {
+      if (didCommit) return;
+
+      didCommit = true;
+
+      const finalValue = shouldSave ? nextValue.trim() : originalValue;
+
+      todoTextEl.textContent = finalValue || originalValue;
+      todoTextEl.classList.remove('edit-in-progress');
+
+      if (shouldSave && finalValue !== originalValue) {
+        browser.storage.sync.set({ [todoID]: finalValue });
+      }
+    }
+
+    input.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        finishEdit(input.value, true);
+      }
+
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        finishEdit(originalValue, false);
+      }
+    });
+
+    // Matches your old inlineEdit behavior:
+    // cancelOnBlur: true
+    input.addEventListener('blur', () => {
+      finishEdit(originalValue, false);
+    });
+
+    input.focus();
+    input.select();
+  }
+
+  function bindInlineTodoEditing() {
+    document.addEventListener('dblclick', (event) => {
+      const todoTextEl = event.target.closest('.todo-text');
+
+      if (!todoTextEl) {
+        return;
+      }
+
+      startInlineTodoEdit(todoTextEl);
+    });
+  }
+
   browser.storage.sync.get([...listCounters, storageKeys.orders], function (result) {
     listNames.forEach(listName => {
       const counterValue = result[storageKeys.counter(listName)];
@@ -91,9 +166,7 @@ $(function () {
 
     state.dones = result[storageKeys.dones] ?? [];
 
-    const orderList = result[storageKeys.orders]
-      ? result[storageKeys.orders].split(",")
-      : [];
+    const orderList = result[storageKeys.orders] ? result[storageKeys.orders].split(",") : [];
 
     // Sort todo list keys into their component lists
     const orderListLeft = [];
@@ -128,7 +201,8 @@ $(function () {
       if (!checkIfCompleted(toDoKey)) {
         state.dones.push(toDoKey);
       }
-    } else {
+    }
+    else {
       $toDoLiItemEl.removeClass('todo-card-done-state');
 
       if (checkIfCompleted(toDoKey)) {
@@ -171,14 +245,15 @@ $(function () {
   });
 
   // Edit and save todo
-  $(".todo-text").inlineEdit({
-    buttons: '',
-    cancelOnBlur: true,
-    save: function (e, data) {
-      const newTodoID = $(this).parent().attr('id');
-      browser.storage.sync.set({ [newTodoID]: data.value });
-    }
-  });
+  // $(".todo-text").inlineEdit({
+  //   buttons: '',
+  //   cancelOnBlur: true,
+  //   save: function (e, data) {
+  //     const newTodoID = $(this).parent().attr('id');
+  //     browser.storage.sync.set({ [newTodoID]: data.value });
+  //   }
+  // });
+  bindInlineTodoEditing();
 
   function bindClearAction($elements, clearAll) {
     $elements.click(function (e) {
@@ -312,24 +387,25 @@ $(function () {
     const items = inputDict['items'];
     const listCounter = state.counters[target]
     items.each(function () {
-      if (this.id.indexOf(target) < 0) {
-        // Reassign ID
-        const oldID = this.id;
-        const newID = storageKeys.todo(target, listCounter);
-        this.id = newID;
-        incrementListCounter(target);
+      if (this.id.indexOf(target) >= 0) return;
 
-        // Store todo item under new key
-        browser.storage.sync.get(oldID, function (retrieved) {
-          browser.storage.sync.set({ [newID]: retrieved[oldID] });
-        });
+      // Reassign ID
+      const oldID = this.id;
+      const newID = storageKeys.todo(target, listCounter);
+      this.id = newID;
+      incrementListCounter(target);
 
-        if (checkIfCompleted(oldID)) { // If the todo was already done
-          state.dones.splice(state.dones.indexOf(oldID), 1); // Remove the old todo ID from the dones list
-          state.dones.push(newID); // and push in the new one
-          browser.storage.sync.set({ [storageKeys.dones]: state.dones });
-        }
-      }
+      // Store todo item under new key
+      browser.storage.sync.get(oldID, function (retrieved) {
+        browser.storage.sync.set({ [newID]: retrieved[oldID] });
+      });
+
+      if (!checkIfCompleted(oldID)) return;
+
+      // If the todo was already done
+      state.dones.splice(state.dones.indexOf(oldID), 1); // Remove the old todo ID from the dones list
+      state.dones.push(newID); // and push in the new one
+      browser.storage.sync.set({ [storageKeys.dones]: state.dones });
     });
     // ScrollMessage();
   };
