@@ -4,9 +4,11 @@ let fluidResizeBound = false;
 let fluidCursorBound = false;
 let fluidInputEnabled = false;
 let fluidInstanceCreated = false;
+let fluidInputEnableTimer = null;
 
+const FLUID_INPUT_ARM_DELAY_MS = 125; 
 const FLUID_LOG_PREFIX = "[Prioritab Fluid]";
-const DEBUG = false;
+const FLUID_DEBUG = false;
 
 const fluidMouseState = {
     lastX: null,
@@ -15,7 +17,7 @@ const fluidMouseState = {
 };
 
 function fluidLog(message, data = undefined) {
-    if (!DEBUG) return;
+    if (!FLUID_DEBUG) return;
 
     if (data === undefined) {
         console.log(FLUID_LOG_PREFIX, message);
@@ -55,6 +57,28 @@ function resetFluidMouseState(reason = "unknown") {
     fluidMouseState.movementLogCount = 0;
 
     fluidLog("resetFluidMouseState", { reason });
+}
+
+function armFluidInputAfterDelay(reason = "unknown") {
+    fluidInputEnabled = false;
+
+    if (fluidInputEnableTimer) {
+        window.clearTimeout(fluidInputEnableTimer);
+    }
+
+    resetFluidMouseState(`armFluidInputAfterDelay: ${reason}`);
+
+    fluidInputEnableTimer = window.setTimeout(function () {
+        fluidInputEnabled = true;
+        fluidInputEnableTimer = null;
+
+        resetFluidMouseState(`fluid input armed: ${reason}`);
+
+        fluidLog("fluid input armed", {
+            reason,
+            delay: FLUID_INPUT_ARM_DELAY_MS
+        });
+    }, FLUID_INPUT_ARM_DELAY_MS);
 }
 
 function setFluidCanvasVisible(isVisible) {
@@ -232,9 +256,9 @@ function enableFluidAnimation(reason = "unknown") {
 
     createFluidInstanceIfNeeded(reason);
 
-    fluidInputEnabled = true;
     resetFluidMouseState(`enableFluidAnimation: ${reason}`);
     setFluidCanvasVisible(true);
+    armFluidInputAfterDelay(reason);
 
     const backgroundCheckbox = getFluidBackgroundImageCheckbox();
     const showBackgroundImageBehindFluid = backgroundCheckbox?.checked ?? false;
@@ -260,6 +284,11 @@ function enableFluidAnimation(reason = "unknown") {
 
 function disableFluidAnimation(reason = "unknown") {
     fluidLog("disableFluidAnimation", { reason });
+
+    if (fluidInputEnableTimer) {
+        window.clearTimeout(fluidInputEnableTimer);
+        fluidInputEnableTimer = null;
+    }
 
     fluidInputEnabled = false;
     resetFluidMouseState(`disableFluidAnimation: ${reason}`);
@@ -457,7 +486,6 @@ function handleUserBackgroundImageChanged(hasBackgroundImage) {
         if (animationEnabled) {
             hideBodyBackgroundImage();
         }
-
         return;
     }
 
