@@ -1,13 +1,39 @@
 //Prioritab_source_code/src/features/theme.js
 
-function setColorProperty(classes, propToChange, newValue) {
-    const selectors = Array.isArray(classes)
-        ? classes.map(className => `.${className}`).join(", ")
-        : `.${classes}`;
+const COLOR_CUSTOMIZATION_STYLE_ID = "color-customization";
+const colorCustomizationRules = new Map();
 
-    const style = document.createElement("style");
-    style.textContent = `${selectors} { ${propToChange}: ${newValue}; }`;
-    document.head.appendChild(style);
+function getColorCustomizationStyleElement() {
+    const styleEl = document.querySelector(`#${COLOR_CUSTOMIZATION_STYLE_ID}`) ?? document.createElement("style");
+    if (!styleEl.id) {
+        styleEl.id = COLOR_CUSTOMIZATION_STYLE_ID;
+        document.head.appendChild(styleEl);
+    }
+    return styleEl;
+}
+
+function renderColorCustomizationStyles() {
+    const styleEl = getColorCustomizationStyleElement();
+    const cssRules = Array.from(colorCustomizationRules.values())
+        .map( ({ className, propToChange, value }) => `.${className} { ${propToChange}: ${value}; }` )
+        .join("\n");
+    styleEl.textContent = cssRules;
+}
+
+function setColorProperty(classes, propToChange, newValue) {
+    const getColorRuleKey = (className, propToChange) => `${className}:${propToChange}`;
+    const classList = Array.isArray(classes) ? classes : [classes];
+    classList.forEach((className) => {
+        colorCustomizationRules.set(
+            getColorRuleKey(className, propToChange),
+            {
+                className,
+                propToChange,
+                value: newValue
+            }
+        );
+    });
+    renderColorCustomizationStyles();
 }
 
 function setColors() {
@@ -94,7 +120,6 @@ function createColorPickerInstance(
 
     input.addEventListener("input", function () {
         const nextColor = input.value;
-
         setColorProperty(cssClasses, propType, nextColor);
 
         browser.storage.sync.set({
