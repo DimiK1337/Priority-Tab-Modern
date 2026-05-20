@@ -336,12 +336,11 @@ input[type="text"]:focus {
 
 .todo-card-done-state {  
   border-color: var(--shadow-border-color);
-  background-color: var(--bg-color);
+  background-color: var(--bg-color)!important;
 }
 
 .todo-card-done-state .todo-text {
   text-decoration: line-through;
-  background-color: var(--bg-color)!important;
   color: var(--shadow-color);
 }
 
