@@ -213,20 +213,34 @@ $(function () {
     browser.storage.sync.set({ [storageKeys.dones]: state.dones });
   });
 
+  // Bind the esc key on the new todo 
+  $newTodo.on('keydown', function (e) {
+    if (e.key !== 'Escape') return;
+
+    e.preventDefault();
+
+    this.value = '';
+
+    const editPanel = this.closest('.edit-priorities');
+    if (editPanel) {
+      $(editPanel).hide();
+      $(editPanel).siblings('.edit-priorities-link').show();
+    }
+  });
+
   // Add todo
   forms.forEach($form => {
     $form.submit(function (e) {
       e.preventDefault();
-      $.publish("/add/", [])
+      addTodo();
     })
   })
 
   // Remove todo
   itemLists.forEach($itemList => {
     $itemList.on('click', 'a', function (e) {
-      const $this = $(this);
       e.preventDefault();
-      $.publish('/remove/', [$this]);
+      removeTodo($(this));
     })
   });
 
@@ -239,27 +253,19 @@ $(function () {
       appendTo: 'body',
       zIndex: 10000,
       stop: function () {
-        $.publish('/regenerate-list/', []);
+        regenerateList();
       }
     });
   });
 
   // Edit and save todo
-  // $(".todo-text").inlineEdit({
-  //   buttons: '',
-  //   cancelOnBlur: true,
-  //   save: function (e, data) {
-  //     const newTodoID = $(this).parent().attr('id');
-  //     browser.storage.sync.set({ [newTodoID]: data.value });
-  //   }
-  // });
   bindInlineTodoEditing();
 
   function bindClearAction($elements, clearAll) {
     $elements.click(function (e) {
       e.preventDefault();
       const listToImpact = e.originalEvent.srcElement.getAttribute('data-list');
-      $.publish('/clear-all/', [listToImpact, clearAll]);
+      clearTodos(listToImpact, clearAll);
     });
   }
 
@@ -269,10 +275,21 @@ $(function () {
 
   // Keyboard for cycling the todo items
   itemLists.forEach($itemList => {
+
+    $itemList.on('click', 'li.todo-card', function (e) {
+      const tagName = e.target.tagName.toLowerCase();
+      const isInteractiveTarget =
+        tagName === 'input' ||
+        tagName === 'label' ||
+        tagName === 'a' ||
+        tagName === 'i'
+
+      if (isInteractiveTarget) return;
+      this.focus();
+    });
+
     $itemList.on('keydown', 'li.todo-card', function (e) {
       const $item = $(this);
-
-      console.log("$item", $item, "e", e)
 
       // Do not reorder while typing/editing inside child controls
       const tagName = e.target.tagName.toLowerCase();
@@ -282,31 +299,27 @@ $(function () {
         tagName === 'select' ||
         e.target.isContentEditable;
 
-      if (isEditableTarget) {
-        return;
-      }
+      if (isEditableTarget) return;
 
       if (e.key === 'ArrowUp') {
         e.preventDefault();
-
         const $prev = $item.prev('li.todo-card');
 
         if ($prev.length) {
           $item.insertBefore($prev);
           $item.focus();
-          $.publish('/regenerate-list/', []);
+          regenerateList();
         }
       }
 
       if (e.key === 'ArrowDown') {
         e.preventDefault();
-
         const $next = $item.next('li.todo-card');
 
         if ($next.length) {
           $item.insertAfter($next);
           $item.focus();
-          $.publish('/regenerate-list/', []);
+          regenerateList();
         }
       }
     });
@@ -319,123 +332,106 @@ $(function () {
     browser.storage.sync.set({ [storageKeys.counter(listName)]: state.counters[listName] });
   }
 
+  // subscribes 
+  function addTodo() {
+    const todoToAdd = Array.from($newTodo).find(todoBox => todoBox.value.trim() !== "");
+    if (!todoToAdd) return;
 
-  // See if this can be moved to another file
-  $.subscribe('/add/', function () {
-    let todoToAdd = null;
-    for (ind = 0; ind < $newTodo.length; ind++) {
-      const todoBox = $newTodo[ind];
-      if (todoBox.value !== "") {
-        todoToAdd = $newTodo[ind];
-      }
-    }
-    if (todoToAdd) {
-      // Figure out which list it's in
-      const listName = todoToAdd.getAttribute('data-list');
-      const listToImpact = lists[listName].$items;
-      const listCounter = state.counters[listName]
+    const listName = todoToAdd.getAttribute('data-list');
+    const listToImpact = lists[listName].$items;
+    const listCounter = state.counters[listName];
 
-      // Take the value of the input field and save it to localStorage
-      const newTodoID = storageKeys.todo(listName, listCounter);
-      browser.storage.sync.set({ [newTodoID]: todoToAdd.value });
+    const newTodoID = storageKeys.todo(listName, listCounter);
 
-      // Set the to-do max counter so on page refresh it keeps going up instead of reset
-      const counterKey = `todo-counter-${listName}`;
-      browser.storage.sync.set({ [storageKeys.counter(listName)]: listCounter });
+    browser.storage.sync.set({ [newTodoID]: todoToAdd.value });
+    browser.storage.sync.set({ [storageKeys.counter(listName)]: listCounter });
 
-      // Append a new list item with the value of the new todo list
-      browser.storage.sync.get(newTodoID, function (result) {
-        listToImpact.append(constructToDoCard(newTodoID, result[newTodoID]));
-        //$('li a:visible').fadeOut();
-        $.publish('/regenerate-list/', []);
-      });
+    browser.storage.sync.get(newTodoID, function (result) {
+      listToImpact.append(constructToDoCard(newTodoID, result[newTodoID]));
+      regenerateList();
+    });
 
-      // Hide the new list, then fade it in for effects
-      $(`#${newTodoID}`).css('display', 'none').fadeIn();
+    $(`#${newTodoID}`).css('display', 'none').fadeIn();
 
-      // Empty the input field
-      todoToAdd.value = "";
+    todoToAdd.value = "";
 
-      incrementListCounter(listName);
-      // ScrollMessage();
-    }
-  });
+    incrementListCounter(listName);
+  }
 
-  $.subscribe('/remove/', function ($this) {
-    const parentId = $this.parent().parent().attr('id');
+  function removeTodo($deleteLink) {
+    const $todoCard = $deleteLink.closest('li.todo-card');
+    const parentId = $todoCard.attr('id');
 
-    // Remove todo list from localStorage based on the id of the clicked parent element
     browser.storage.sync.remove(parentId);
 
-    // Remove todo from the dones list, in case it was there
     if (checkIfCompleted(parentId)) {
       state.dones.splice(state.dones.indexOf(parentId), 1);
       browser.storage.sync.set({ [storageKeys.dones]: state.dones });
     }
 
-    // Fade out the list item then remove from DOM
-    $this.parent().fadeOut(function () {
-      $this.parent().parent().remove();
-      $.publish('/regenerate-list/', []);
+    $todoCard.fadeOut(function () {
+      $todoCard.remove();
+      regenerateList();
     });
-
-    // ScrollMessage();
-  });
+  }
 
   const reassignToList = (inputDict) => {
-    const target = inputDict['target'];
-    const items = inputDict['items'];
-    const listCounter = state.counters[target]
+    const target = inputDict.target;
+    const items = inputDict.items;
+
     items.each(function () {
       if (this.id.indexOf(target) >= 0) return;
 
-      // Reassign ID
       const oldID = this.id;
-      const newID = storageKeys.todo(target, listCounter);
+      const newID = storageKeys.todo(target, state.counters[target]);
+
       this.id = newID;
       incrementListCounter(target);
 
-      // Store todo item under new key
       browser.storage.sync.get(oldID, function (retrieved) {
         browser.storage.sync.set({ [newID]: retrieved[oldID] });
       });
 
       if (!checkIfCompleted(oldID)) return;
 
-      // If the todo was already done
-      state.dones.splice(state.dones.indexOf(oldID), 1); // Remove the old todo ID from the dones list
-      state.dones.push(newID); // and push in the new one
+      state.dones.splice(state.dones.indexOf(oldID), 1);
+      state.dones.push(newID);
       browser.storage.sync.set({ [storageKeys.dones]: state.dones });
     });
-    // ScrollMessage();
   };
 
-  $.subscribe('/regenerate-list/', function () {
-    // Make sure all items in the respective lists have the right 'tag' (in event of cross-list movement)
-    listNames.forEach(list => reassignToList({ 'target': list, 'items': $(`#shown-items-${list} li`) }));
+  function regenerateList() {
+    listNames.forEach(list => {
+      reassignToList({
+        target: list,
+        items: $(`#shown-items-${list} li`)
+      });
+    });
 
-    // Empty the order array
     state.order.length = 0;
 
-    // Go through the list item, grab the ID then push into the array
     listNames.forEach(list => {
       $(`#shown-items-${list} li`).each(function () {
         const id = $(this).attr('id');
         state.order.push(id);
       });
-    })
+    });
 
-    // Convert the array into string and save to localStorage
-    browser.storage.sync.set({ [storageKeys.orders]: state.order.join(',') });
-  });
+    browser.storage.sync.set({
+      [storageKeys.orders]: state.order.join(',')
+    });
+  }
 
-  $.subscribe('/clear-all/', function (listToImpactName, clearAll) {
+  function clearTodos(listToImpactName, clearAll) {
     const itemsToImpact = $(`#shown-items-${listToImpactName} li a`);
-    itemsToImpact.each(function (index) {
-      const parentId = $(this).closest('li').attr('id');
+
+    itemsToImpact.each(function () {
+      const $deleteLink = $(this);
+      const parentId = $deleteLink.closest('li').attr('id');
+
       if (clearAll || (!clearAll && checkIfCompleted(parentId))) {
-        $.publish('/remove/', [$(this)]);
+        removeTodo($deleteLink);
       }
     });
-  });
+  }
 });
