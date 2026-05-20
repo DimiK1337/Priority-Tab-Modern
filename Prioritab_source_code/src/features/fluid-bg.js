@@ -6,16 +6,18 @@ let fluidInputEnabled = false;
 let fluidInstanceCreated = false;
 let fluidInputEnableTimer = null;
 
-const FLUID_INPUT_ARM_DELAY_MS = 125; 
-const FLUID_LOG_PREFIX = "[Prioritab Fluid]";
-const FLUID_DEBUG = false;
-
 const fluidMouseState = {
     lastX: null,
     lastY: null,
     movementLogCount: 0
 };
 
+// Fluid-JS can break if pointer input is fed immediately on startup.
+// 125ms is the lowest tested delay that avoids the initial red-flash/freeze bug.
+const FLUID_INPUT_ARM_DELAY_MS = 125;
+
+const FLUID_LOG_PREFIX = "[Prioritab Fluid]";
+const FLUID_DEBUG = false;
 function fluidLog(message, data = undefined) {
     if (!FLUID_DEBUG) return;
 
@@ -118,9 +120,7 @@ function hasStoredBodyBackgroundImage(callback) {
     browser.storage.local.get(
         [PRIORITAB_DEFAULTS.storageKeys.userBackgroundImage],
         function (result) {
-            const savedImage =
-                result[PRIORITAB_DEFAULTS.storageKeys.userBackgroundImage];
-
+            const savedImage = result[PRIORITAB_DEFAULTS.storageKeys.userBackgroundImage];
             callback(Boolean(savedImage));
         }
     );
@@ -130,8 +130,7 @@ function showStoredBodyBackgroundImage() {
     browser.storage.local.get(
         [PRIORITAB_DEFAULTS.storageKeys.userBackgroundImage],
         function (result) {
-            const savedImage =
-                result[PRIORITAB_DEFAULTS.storageKeys.userBackgroundImage];
+            const savedImage = result[PRIORITAB_DEFAULTS.storageKeys.userBackgroundImage];
 
             if (savedImage) {
                 document.body.style.backgroundImage = `url("${savedImage}")`;
@@ -547,7 +546,6 @@ function bindFluidToCursor() {
         }
 
         const pointer = getFluidPointer();
-
         if (!pointer) {
             fluidMouseState.lastX = null;
             fluidMouseState.lastY = null;
@@ -582,14 +580,12 @@ function bindFluidToCursor() {
 
             fluidMouseState.movementLogCount += 1;
         }
-
         fluidMouseState.lastX = event.clientX;
         fluidMouseState.lastY = event.clientY;
     });
 
     window.addEventListener("mouseleave", function () {
         const pointer = getFluidPointer();
-
         if (pointer) {
             pointer.down = false;
             pointer.moved = false;
@@ -598,7 +594,6 @@ function bindFluidToCursor() {
         }
 
         resetFluidMouseState("mouseleave");
-
         fluidLog("mouseleave: pointer reset");
     });
 }

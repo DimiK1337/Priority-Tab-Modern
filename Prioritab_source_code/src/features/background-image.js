@@ -1,9 +1,7 @@
 // Prioritab_source_code/src/features/background-image.js
 
 function setBodyBackgroundImage(imageValue) {
-    document.body.style.backgroundImage = imageValue
-        ? `url("${imageValue}")`
-        : "none";
+    document.body.style.backgroundImage = imageValue ? `url("${imageValue}")` : "none";
 }
 
 function setBodyBackgroundPosition(positionValue) {
@@ -36,19 +34,13 @@ function initBackgroundImage() {
     if (bgImageInput) {
         bgImageInput.addEventListener("change", function () {
             const file = bgImageInput.files[0];
-
-            if (!file) {
-                return;
-            }
+            if (!file) return;
 
             const reader = new FileReader();
-
             reader.onloadend = function () {
                 browser.storage.local.set({
                     [PRIORITAB_DEFAULTS.storageKeys.userBackgroundImage]: reader.result
                 }, function () {
-                    console.log("Background image saved");
-
                     setBodyBackgroundImage(reader.result);
 
                     // Important:
@@ -57,7 +49,6 @@ function initBackgroundImage() {
                     notifyFluidBackgroundImageChanged(true);
                 });
             };
-
             reader.readAsDataURL(file);
         });
     }
@@ -65,9 +56,7 @@ function initBackgroundImage() {
     browser.storage.local.get(
         [PRIORITAB_DEFAULTS.storageKeys.userBackgroundImage],
         function (result) {
-            const savedImage =
-                result[PRIORITAB_DEFAULTS.storageKeys.userBackgroundImage];
-
+            const savedImage = result[PRIORITAB_DEFAULTS.storageKeys.userBackgroundImage];
             if (savedImage) {
                 bodyEl.style.backgroundImage = `url("${savedImage}")`;
             }
