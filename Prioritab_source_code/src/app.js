@@ -5,15 +5,15 @@ window.onload = function () {
 
     browser.storage.sync.get(
         PRIORITAB_DEFAULTS.storageKeys.userUseWorkday,
-        function (result) {
-            if (
-                result[PRIORITAB_DEFAULTS.storageKeys.userUseWorkday] === "true"
-            ) {
+        (result) => {
+            if (result[PRIORITAB_DEFAULTS.storageKeys.userUseWorkday] === "true") {
                 countdownWorkday();
-                $("#workday-checkbox").prop("checked", true);
-            } else {
-                countdownDay();
+                const workdayCheckbox = document.querySelector("#workday-checkbox");
+                if (workdayCheckbox) {
+                    workdayCheckbox.checked = true;
+                }
             }
+            else countdownDay();
         }
     );
 

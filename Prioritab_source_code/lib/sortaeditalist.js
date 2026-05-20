@@ -1,7 +1,7 @@
 // An editable, sortable list
 // http://web.koesbong.com/2011/01/24/sortable-and-editable-to-do-list-using-html5s-localstorage/
 
-$(function () {
+document.addEventListener('DOMContentLoaded', () => {
   const browser = (window.browser) ?? window.chrome;
 
   const { fadeIn, fadeOut } = window.PrioritabDom;
@@ -95,7 +95,7 @@ $(function () {
     });
   };
 
-  // Old Jquery edit inline
+  // Inline todo editing
   function startInlineTodoEdit(todoTextEl) {
     if (todoTextEl.querySelector('input')) return;
 
@@ -162,7 +162,7 @@ $(function () {
     });
   }
 
-  browser.storage.sync.get([...listCounters, storageKeys.orders], function (result) {
+  browser.storage.sync.get([...listCounters, storageKeys.orders], (result) => {
     listNames.forEach(listName => {
       const counterValue = result[storageKeys.counter(listName)];
       state.counters[listName] = counterValue ? counterValue + 1 : 1;
@@ -193,7 +193,7 @@ $(function () {
     renderTodoList(orderListRight, lists.right.items);
   });
 
-  // Native dragging/sorting code to replace JQ UI
+  // Native dragging/drop sorting
   let draggingTodoCard = null; // Might want to add to state obj
 
   function isDragBlockedTarget(target) {
@@ -459,13 +459,12 @@ $(function () {
   });
 
 
-  // Subscribes
+  // storage helpers for todos
   function incrementListCounter(listName) {
     state.counters[listName]++;
     browser.storage.sync.set({ [storageKeys.counter(listName)]: state.counters[listName] });
   }
 
-  // subscribes 
   function addTodo() {
     const todoToAdd = Array.from(newTodoInputs).find(todoBox => todoBox.value.trim() !== "");
     if (!todoToAdd) return;
