@@ -31,26 +31,26 @@ $(function () {
 
   const lists = {
     left: {
-      $form: $('#todo-form-left'),
-      $items: $('#shown-items-left')
+      form: document.querySelector('#todo-form-left'),
+      items: document.querySelector('#shown-items-left')
     },
     mid: {
-      $form: $('#todo-form-mid'),
-      $items: $('#shown-items-mid')
+      form: document.querySelector('#todo-form-mid'),
+      items: document.querySelector('#shown-items-mid')
     },
     right: {
-      $form: $('#todo-form-right'),
-      $items: $('#shown-items-right')
+      form: document.querySelector('#todo-form-right'),
+      items: document.querySelector('#shown-items-right')
     }
   };
 
   const listNames = Object.keys(lists);
-  const forms = listNames.map(name => lists[name].$form);
-  const itemLists = listNames.map(name => lists[name].$items);
+  const forms = listNames.map(name => lists[name].form).filter(Boolean);
+  const itemLists = listNames.map(name => lists[name].items).filter(Boolean);
 
-  const $sweepDone = $('.sweep-link');
-  const $clearAll = $('.clear-all-link');
-  const $newTodo = $('.todo');
+  const sweepDoneButtons = document.querySelectorAll('.sweep-link'); // $sweepDone
+  const clearAllButtons = document.querySelectorAll('.clear-all-link'); // $clearAll
+  const newTodoInputs = document.querySelectorAll('.todo'); // $newTodo
 
   const checkIfCompleted = (toDoID) => state.dones.includes(toDoID);
 
@@ -78,10 +78,12 @@ $(function () {
     `;
   };
 
-  const renderTodoList = (_orderList, $list) => {
-    browser.storage.sync.get(_orderList, (result) => {
-      _orderList.forEach(key => {
-        $list.append(constructToDoCard(key, result[key]));
+  const renderTodoList = (orderList, listElement) => {
+    browser.storage.sync.get(orderList, (result) => {
+      orderList.forEach((key) => {
+        const todoText = result[key];
+        if (todoText === undefined) return; // Ignore zombie todos
+        listElement.insertAdjacentHTML('beforeend', constructToDoCard(key, todoText));
       });
     });
   };
@@ -140,7 +142,10 @@ $(function () {
     });
 
     input.focus();
-    input.select();
+    input.focus();
+
+    const cursorPosition = input.value.length;
+    input.setSelectionRange(cursorPosition, cursorPosition);
   }
 
   function bindInlineTodoEditing() {
@@ -177,9 +182,9 @@ $(function () {
     }
 
     // Render existing todo items into the three separate lists
-    renderTodoList(orderListLeft, $("#shown-items-left"));
-    renderTodoList(orderListMid, $("#shown-items-mid"));
-    renderTodoList(orderListRight, $("#shown-items-right"));
+    renderTodoList(orderListLeft, lists.left.items);
+    renderTodoList(orderListMid, lists.mid.items);
+    renderTodoList(orderListRight, lists.right.items);
   });
 
   // Native dragging/sorting code to replace JQ UI
@@ -273,131 +278,149 @@ $(function () {
   }
 
   // What happens when you check the checkbox...
+  itemLists.forEach((itemList) => {
+    itemList.addEventListener('change', (event) => {
+      const checkbox = event.target.closest('input[type="checkbox"]');
+      if (!checkbox || !itemList.contains(checkbox)) return;
 
-  // TODO: Remove $(this)
-  $('.shown-items').on('change', 'input[type=checkbox]', function () {
-    const $toDoLiItemEl = $(this).closest("li");
-    const toDoKey = $toDoLiItemEl.attr('id');
-    const isChecked = $(this).is(':checked');
+      const todoCard = checkbox.closest('li.todo-card');
+      if (!todoCard) return;
 
-    if (isChecked) {
-      $toDoLiItemEl.addClass('todo-card-done-state');
+      const toDoKey = todoCard.id;
+      const isChecked = checkbox.checked;
+      if (isChecked) {
+        todoCard.classList.add('todo-card-done-state');
 
-      if (!checkIfCompleted(toDoKey)) {
-        state.dones.push(toDoKey);
+        if (!checkIfCompleted(toDoKey)) {
+          state.dones.push(toDoKey);
+        }
       }
-    }
-    else {
-      $toDoLiItemEl.removeClass('todo-card-done-state');
+      else {
+        todoCard.classList.remove('todo-card-done-state');
 
-      if (checkIfCompleted(toDoKey)) {
-        state.dones.splice(state.dones.indexOf(toDoKey), 1);
+        if (checkIfCompleted(toDoKey)) {
+          state.dones.splice(state.dones.indexOf(toDoKey), 1);
+        }
       }
-    }
 
-    browser.storage.sync.set({ [storageKeys.dones]: state.dones });
+      browser.storage.sync.set({ [storageKeys.dones]: state.dones });
+    });
   });
 
   // Bind the esc key on the new todo
-  // TODO: Remove this 
-  $newTodo.on('keydown', function (e) {
-    if (e.key !== 'Escape') return;
 
-    e.preventDefault();
+  newTodoInputs.forEach((todoInput) => {
+    todoInput.addEventListener('keydown', (event) => {
+      if (event.key !== 'Escape') return;
+      event.preventDefault();
 
-    this.value = '';
+      todoInput.value = '';
+      const editPanel = todoInput.closest('.edit-priorities');
+      if (!editPanel) return;
+      editPanel.style.display = 'none';
 
-    const editPanel = this.closest('.edit-priorities');
-    if (editPanel) {
-      $(editPanel).hide();
-      $(editPanel).siblings('.edit-priorities-link').show();
-    }
+      const optionsLink = editPanel.parentElement?.querySelector('.edit-priorities-link');
+      if (optionsLink) {
+        optionsLink.style.display = '';
+      }
+    });
   });
 
   // Add todo
-  forms.forEach($form => {
-    $form.submit(function (e) {
-      e.preventDefault();
+  forms.forEach((form) => {
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
       addTodo();
-    })
-  })
+    });
+  });
 
   // Remove todo
-  itemLists.forEach($itemList => {
-    $itemList.on('click', 'a', function (e) {
-      e.preventDefault();
-      removeTodo(e.target);
-    })
+  itemLists.forEach((itemList) => {
+    itemList.addEventListener('click', (event) => {
+      const clickedLink = event.target.closest('a');
+      if (!clickedLink || !itemList.contains(clickedLink)) return;
+      event.preventDefault();
+      removeTodo(clickedLink);
+    });
   });
 
   // Sort todo
   bindNativeTodoSorting();
 
-
   // Edit and save todo
   bindInlineTodoEditing();
 
-  function bindClearAction($elements, clearAll) {
-    $elements.click(function (e) {
-      e.preventDefault();
-      const listToImpact = e.originalEvent.srcElement.getAttribute('data-list');
-      clearTodos(listToImpact, clearAll);
+  function bindClearAction(elements, clearAll) {
+    elements.forEach((element) => {
+      element.addEventListener('click', (event) => {
+        event.preventDefault();
+        const listToImpact = event.target.getAttribute('data-list');
+        if (!listToImpact) return;
+        clearTodos(listToImpact, clearAll);
+      });
     });
   }
 
-  // Sweep done / Clear all
-  bindClearAction($sweepDone, false);
-  bindClearAction($clearAll, true);
+  bindClearAction(sweepDoneButtons, false);
+  bindClearAction(clearAllButtons, true);
 
   // Keyboard for cycling the todo items
-  // TODO: Remove this
-  itemLists.forEach($itemList => {
+  // Keyboard for cycling the todo items
+  itemLists.forEach((itemList) => {
+    itemList.addEventListener('click', (event) => {
+      const todoCard = event.target.closest('li.todo-card');
 
-    $itemList.on('click', 'li.todo-card', function (e) {
-      const tagName = e.target.tagName.toLowerCase();
+      if (!todoCard || !itemList.contains(todoCard)) {
+        return;
+      }
+
+      const tagName = event.target.tagName.toLowerCase();
+
       const isInteractiveTarget =
         tagName === 'input' ||
         tagName === 'label' ||
         tagName === 'a' ||
-        tagName === 'i'
+        tagName === 'i';
 
-      if (isInteractiveTarget) return;
-      this.focus();
+      if (isInteractiveTarget) {
+        return;
+      }
+
+      todoCard.focus();
     });
 
-    $itemList.on('keydown', 'li.todo-card', function (e) {
-      const $item = $(this);
+    itemList.addEventListener('keydown', (event) => {
+      const todoCard = event.target.closest('li.todo-card');
+      if (!todoCard || !itemList.contains(todoCard)) return;
 
-      console.log("in keydown meth, this=", this, "e.target = ", e.target)
-
-      // Do not reorder while typing/editing inside child controls
-      const tagName = e.target.tagName.toLowerCase();
+      const tagName = event.target.tagName.toLowerCase();
       const isEditableTarget =
         tagName === 'input' ||
         tagName === 'textarea' ||
         tagName === 'select' ||
-        e.target.isContentEditable;
-
+        event.target.isContentEditable;
       if (isEditableTarget) return;
 
-      if (e.key === 'ArrowUp') {
-        e.preventDefault();
-        const $prev = $item.prev('li.todo-card');
+      if (event.key === 'ArrowUp') {
+        event.preventDefault();
 
-        if ($prev.length) {
-          $item.insertBefore($prev);
-          $item.focus();
+        const previousTodoCard = todoCard.previousElementSibling;
+
+        if (previousTodoCard?.matches('li.todo-card')) {
+          itemList.insertBefore(todoCard, previousTodoCard);
+          todoCard.focus();
           regenerateList();
         }
       }
 
-      if (e.key === 'ArrowDown') {
-        e.preventDefault();
-        const $next = $item.next('li.todo-card');
+      if (event.key === 'ArrowDown') {
+        event.preventDefault();
 
-        if ($next.length) {
-          $item.insertAfter($next);
-          $item.focus();
+        const nextTodoCard = todoCard.nextElementSibling;
+
+        if (nextTodoCard?.matches('li.todo-card')) {
+          itemList.insertBefore(nextTodoCard, todoCard);
+          todoCard.focus();
           regenerateList();
         }
       }
@@ -413,11 +436,11 @@ $(function () {
 
   // subscribes 
   function addTodo() {
-    const todoToAdd = Array.from($newTodo).find(todoBox => todoBox.value.trim() !== "");
+    const todoToAdd = Array.from(newTodoInputs).find(todoBox => todoBox.value.trim() !== "");
     if (!todoToAdd) return;
 
     const listName = todoToAdd.getAttribute('data-list');
-    const listToImpact = lists[listName].$items;
+    const listToImpact = lists[listName].items;
     const listCounter = state.counters[listName];
 
     const newTodoID = storageKeys.todo(listName, listCounter);
@@ -426,12 +449,11 @@ $(function () {
     browser.storage.sync.set({ [newTodoID]: newTodoText });
     browser.storage.sync.set({ [storageKeys.counter(listName)]: listCounter });
 
-    listToImpact.append(constructToDoCard(newTodoID, newTodoText));
+    listToImpact.insertAdjacentHTML('beforeend', constructToDoCard(newTodoID, newTodoText));
     regenerateList();
 
     fadeIn(document.getElementById(newTodoID), 200, "flex");
     todoToAdd.value = "";
-
     incrementListCounter(listName);
   }
 
