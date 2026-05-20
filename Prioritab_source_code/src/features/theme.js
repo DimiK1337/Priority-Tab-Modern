@@ -67,37 +67,46 @@ function setDateTimeFormat() {
 }
 
 function createColorPickerInstance(
-    buttonID,
+    inputID,
     defaultColor,
     cssClasses,
     storageSyncKey,
     isBackgroundColor = false
 ) {
-    const buttonIDSelector = buttonID.startsWith("#") ? buttonID : `#${buttonID}`;
+    const inputSelector = inputID.startsWith("#") ? inputID : `#${inputID}`;
+    const input = document.querySelector(inputSelector);
+    if (!input) {
+        console.error(`Color input not found: ${inputSelector}`);
+        return null;
+    }
 
-    // Still jQuery for now because colpick is a jQuery plugin.
-    // TODO: Find a non Jquery color picker
-    const instance = $(buttonIDSelector).colpick({
-        layout: "full",
-        submit: false,
-        colorScheme: "dark",
-        color: defaultColor,
+    const propType = isBackgroundColor ? "background-color" : "color";
 
-        onChange: function (hsb, hex, rgb, el, bySetColor) {
-            const propType = isBackgroundColor ? "background-color" : "color";
-            const nextColor = `#${hex}`;
+    browser.storage.sync.get(
+        { [storageSyncKey]: defaultColor },
+        function (result) {
+            const savedColor = result[storageSyncKey] ?? defaultColor;
 
-            setColorProperty(cssClasses, propType, nextColor);
-            browser.storage.sync.set({ [storageSyncKey]: nextColor });
-        },
-
-        onHide: function () {
-            document.querySelectorAll(".color-selector-label").forEach((label) => {
-                label.style.visibility = "visible";
-                label.style.fontWeight = "normal";
-            });
+            input.value = savedColor;
+            setColorProperty(cssClasses, propType, savedColor);
         }
+    );
+
+    input.addEventListener("input", function () {
+        const nextColor = input.value;
+
+        setColorProperty(cssClasses, propType, nextColor);
+
+        browser.storage.sync.set({
+            [storageSyncKey]: nextColor
+        });
     });
 
-    return instance;
+    input.addEventListener("change", function () {
+        browser.storage.sync.set({
+            [storageSyncKey]: input.value
+        });
+    });
+
+    return input;
 }

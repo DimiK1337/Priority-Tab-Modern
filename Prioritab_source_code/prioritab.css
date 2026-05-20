@@ -401,6 +401,22 @@ input[type="text"]:focus {
   z-index: 99999 !important;
 }
 
+.color-selector-input {
+  width: 3rem;
+  height: 1.5rem;
+  padding: 0;
+  border: 1px solid currentColor;
+  background: transparent;
+  cursor: pointer;
+  vertical-align: middle;
+}
+
+.color-selector-label {
+  display: inline-block;
+  min-width: 8rem;
+  cursor: pointer;
+}
+
 #workday-checkbox {
   vertical-align: middle;
 }

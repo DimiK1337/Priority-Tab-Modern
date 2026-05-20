@@ -5,7 +5,8 @@
 <head>
   <title>Prioritab</title>
   <link href="prioritab.css" rel="stylesheet">
-  <link rel='stylesheet' href='lib/colpick.min.css'>
+  <!-- TODO: Delete this once the project is fully JQ free -->
+  <!-- <link rel='stylesheet' href='lib/colpick.min.css'> -->
   <link rel="stylesheet" href="lib/font-awesome.min.css">
   <!--<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>-->
 
@@ -108,21 +109,27 @@
     <i id="customize-button" class="fa fa-cogs shadow-color" title="Customization"></i>
     <div id="customize-selectors" class="main-bgcolor">
       <h1 id="customize-corner-title">Customization</h1>
+
       <div id="customize-colors">
         <h2>Colors:</h2>
-        <button id="background-color-selector" class="color-selector-label cursor-pointer">
-          Background <i class="fa fa-chevron-right" aria-hidden="true"></i>
-        </button>
+
+        <label class="color-selector-label" for="background-color-selector">Background</label>
+        <input id="background-color-selector" class="color-selector-input" type="color" />
         <br />
-        <button id="font-color-selector" class="color-selector-label cursor-pointer">Font <i class="fa fa-chevron-right"
-            aria-hidden="true"></i></button>
+
+        <label class="color-selector-label" for="font-color-selector">Font</label>
+        <input id="font-color-selector" class="color-selector-input" type="color" />
         <br />
-        <button id="shadow-color-selector" class="color-selector-label cursor-pointer">Secondary Font <i
-            class="fa fa-chevron-right" aria-hidden="true"></i></button>
+
+        <label class="color-selector-label" for="shadow-color-selector">Secondary Font</label>
+        <input id="shadow-color-selector" class="color-selector-input" type="color" />
         <br />
+
         <button id="restore-default-colors" class="cursor-pointer">Restore default colors</button>
       </div>
+
       <br />
+
       <div id="customize-bg-img">
         <h2>Background Image</h2>
         <input type='file' id='bg_img_file_input' />
@@ -214,10 +221,13 @@
   <!-- TODO: Delete lib/jquery.inlineedit-prioritab.js once the project is fully jQuery-free. -->
   <!-- <script src="lib/jquery.inlineedit-prioritab.js"></script> -->
 
-  <!-- TODO: Delete lib/pubsub.min.js once the project is done -->
+  <!-- TODO: Delete lib/pubsub.min.js once the project is fully jQuery-free -->
   <!-- <script src="lib/pubsub.min.js"></script> -->
   <script src="lib/sortaeditalist.js"></script>
-  <script src="lib/colpick.min.js"></script>
+
+
+  <!-- TODO: Delete lib/colpick.min.js once the project is fully JQ free -->
+  <!-- <script src="lib/colpick.min.js"></script> -->
   <script src="lib/fluid.min.js"></script>
 
   <script src="src/utils/dom.js"></script>

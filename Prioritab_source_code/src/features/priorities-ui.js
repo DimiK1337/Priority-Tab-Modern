@@ -3,6 +3,13 @@
 function initPrioritiesUi() {
   const { qs, qsa, on, hide, show } = window.PrioritabDom;
 
+  // Tiny helper function to reset a color picker when restoring default colors of the customize color section
+  function setColorInputValue(selector, colorValue) {
+    const input = qs(selector);
+    if (!input) return;
+    input.value = colorValue;
+  }
+
   browser.storage.sync.get([
     PRIORITAB_DEFAULTS.storageKeys.userWorkdayStart,
     PRIORITAB_DEFAULTS.storageKeys.userWorkdayEnd
@@ -68,37 +75,22 @@ function initPrioritiesUi() {
   });
 
   on(qs('#restore-default-colors'), 'click', () => {
-    setColorProperty(
-      'main-bg-color',
-      'background-color',
-      PRIORITAB_DEFAULTS.colors.bg
-    );
+    const defaultBgColor = PRIORITAB_DEFAULTS.colors.bg;
+    const defaultFontColor = PRIORITAB_DEFAULTS.colors.font;
+    const defaultShadowColor = PRIORITAB_DEFAULTS.colors.shadow;
+
+    setColorProperty('main-bg-color', 'background-color', defaultBgColor);
+    setColorProperty(['main-font-color', 'main-border-color'], 'color', defaultFontColor);
+    setColorProperty(['shadow-color', 'shadow-border-color'], 'color', defaultShadowColor);
+
+    setColorInputValue('#background-color-selector', defaultBgColor);
+    setColorInputValue('#font-color-selector', defaultFontColor);
+    setColorInputValue('#shadow-color-selector', defaultShadowColor);
 
     browser.storage.sync.set({
-      [PRIORITAB_DEFAULTS.storageKeys.userBackgroundColor]:
-        PRIORITAB_DEFAULTS.colors.bg
-    });
-
-    setColorProperty(
-      ['main-font-color', 'main-border-color'],
-      'color',
-      PRIORITAB_DEFAULTS.colors.font
-    );
-
-    browser.storage.sync.set({
-      [PRIORITAB_DEFAULTS.storageKeys.userFontColor]:
-        PRIORITAB_DEFAULTS.colors.font
-    });
-
-    setColorProperty(
-      ['shadow-color', 'shadow-border-color'],
-      'color',
-      PRIORITAB_DEFAULTS.colors.shadow
-    );
-
-    browser.storage.sync.set({
-      [PRIORITAB_DEFAULTS.storageKeys.userShadowColor]:
-        PRIORITAB_DEFAULTS.colors.shadow
+      [PRIORITAB_DEFAULTS.storageKeys.userBackgroundColor]: defaultBgColor,
+      [PRIORITAB_DEFAULTS.storageKeys.userFontColor]: defaultFontColor,
+      [PRIORITAB_DEFAULTS.storageKeys.userShadowColor]: defaultShadowColor
     });
   });
 
@@ -122,11 +114,8 @@ function initPrioritiesUi() {
     const dateFormatInput = qs('#date-format-input');
     const timeFormatInput = qs('#time-format-input');
 
-    PRIORITAB_STATE.dateFormat =
-      dateFormatInput.selectedOptions[0].textContent;
-
-    PRIORITAB_STATE.timeFormat =
-      timeFormatInput.selectedOptions[0].textContent;
+    PRIORITAB_STATE.dateFormat = dateFormatInput.selectedOptions[0].textContent;
+    PRIORITAB_STATE.timeFormat = timeFormatInput.selectedOptions[0].textContent;
 
     browser.storage.sync.set({
       [PRIORITAB_DEFAULTS.storageKeys.userTimeFormat]:
