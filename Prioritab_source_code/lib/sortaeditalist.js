@@ -4,6 +4,8 @@
 $(function () {
   const browser = (window.browser) ?? window.chrome;
 
+  const { fadeIn, fadeOut } = window.PrioritabDom;
+
   const listCounters = ['todo-counter-left', 'todo-counter-mid', 'todo-counter-right', 'todo-dones'];
 
   const storageKeys = {
@@ -85,15 +87,10 @@ $(function () {
 
   // Old Jquery edit inline
   function startInlineTodoEdit(todoTextEl) {
-    if (todoTextEl.querySelector('input')) {
-      return;
-    }
+    if (todoTextEl.querySelector('input')) return;
 
     const todoCard = todoTextEl.closest('li.todo-card');
-
-    if (!todoCard) {
-      return;
-    }
+    if (!todoCard) return;
 
     const todoID = todoCard.id;
     const originalValue = todoTextEl.textContent;
@@ -111,7 +108,6 @@ $(function () {
 
     function finishEdit(nextValue, shouldSave) {
       if (didCommit) return;
-
       didCommit = true;
 
       const finalValue = shouldSave ? nextValue.trim() : originalValue;
@@ -149,11 +145,7 @@ $(function () {
   function bindInlineTodoEditing() {
     document.addEventListener('dblclick', (event) => {
       const todoTextEl = event.target.closest('.todo-text');
-
-      if (!todoTextEl) {
-        return;
-      }
-
+      if (!todoTextEl) return;
       startInlineTodoEdit(todoTextEl);
     });
   }
@@ -190,6 +182,8 @@ $(function () {
   });
 
   // What happens when you check the checkbox...
+
+  // TODO: Remove $(this)
   $('.shown-items').on('change', 'input[type=checkbox]', function () {
     const $toDoLiItemEl = $(this).closest("li");
     const toDoKey = $toDoLiItemEl.attr('id');
@@ -213,7 +207,8 @@ $(function () {
     browser.storage.sync.set({ [storageKeys.dones]: state.dones });
   });
 
-  // Bind the esc key on the new todo 
+  // Bind the esc key on the new todo
+  // TODO: Remove this 
   $newTodo.on('keydown', function (e) {
     if (e.key !== 'Escape') return;
 
@@ -240,7 +235,8 @@ $(function () {
   itemLists.forEach($itemList => {
     $itemList.on('click', 'a', function (e) {
       e.preventDefault();
-      removeTodo($(this));
+      // TODO: Might be a problem was original removeTodo($(this))
+      removeTodo(e.target);
     })
   });
 
@@ -274,6 +270,7 @@ $(function () {
   bindClearAction($clearAll, true);
 
   // Keyboard for cycling the todo items
+  // TODO: Remove this
   itemLists.forEach($itemList => {
 
     $itemList.on('click', 'li.todo-card', function (e) {
@@ -291,6 +288,8 @@ $(function () {
     $itemList.on('keydown', 'li.todo-card', function (e) {
       const $item = $(this);
 
+      console.log("in keydown meth, this=", this, "e.target = ", e.target)
+
       // Do not reorder while typing/editing inside child controls
       const tagName = e.target.tagName.toLowerCase();
       const isEditableTarget =
@@ -300,7 +299,7 @@ $(function () {
         e.target.isContentEditable;
 
       if (isEditableTarget) return;
-      
+
       if (e.key === 'ArrowUp') {
         e.preventDefault();
         const $prev = $item.prev('li.todo-card');
@@ -346,20 +345,22 @@ $(function () {
 
     browser.storage.sync.set({ [newTodoID]: newTodoText });
     browser.storage.sync.set({ [storageKeys.counter(listName)]: listCounter });
+
     listToImpact.append(constructToDoCard(newTodoID, newTodoText));
     regenerateList();
 
-    $(`#${newTodoID}`).css('display', 'none').fadeIn();
-
+    fadeIn(document.getElementById(newTodoID), 200, "flex");
     todoToAdd.value = "";
 
     incrementListCounter(listName);
   }
 
-  function removeTodo($deleteLink) {
-    const $todoCard = $deleteLink.closest('li.todo-card');
-    const parentId = $todoCard.attr('id');
+  function removeTodo(clickedElement) {
+    const todoCard = clickedElement.closest('li.todo-card');
+    if (!todoCard) return;
 
+    const parentId = todoCard.id;
+    if (!parentId) return;
     browser.storage.sync.remove(parentId);
 
     if (checkIfCompleted(parentId)) {
@@ -367,26 +368,23 @@ $(function () {
       browser.storage.sync.set({ [storageKeys.dones]: state.dones });
     }
 
-    $todoCard.fadeOut(function () {
-      $todoCard.remove();
+    fadeOut(todoCard, 200, () => {
+      todoCard.remove();
       regenerateList();
     });
   }
 
-  const reassignToList = (inputDict) => {
-    const target = inputDict.target;
-    const items = inputDict.items;
+  const reassignToList = ({ target, items }) => {
+    items.forEach((item) => {
+      if (item.id.includes(target)) return;
 
-    items.each(function () {
-      if (this.id.indexOf(target) >= 0) return;
-
-      const oldID = this.id;
+      const oldID = item.id;
       const newID = storageKeys.todo(target, state.counters[target]);
 
-      this.id = newID;
+      item.id = newID;
       incrementListCounter(target);
 
-      browser.storage.sync.get(oldID, function (retrieved) {
+      browser.storage.sync.get(oldID, (retrieved) => {
         browser.storage.sync.set({ [newID]: retrieved[oldID] });
       });
 
@@ -394,41 +392,34 @@ $(function () {
 
       state.dones.splice(state.dones.indexOf(oldID), 1);
       state.dones.push(newID);
+
       browser.storage.sync.set({ [storageKeys.dones]: state.dones });
     });
   };
 
   function regenerateList() {
-    listNames.forEach(list => {
+    listNames.forEach((list) => {
       reassignToList({
         target: list,
-        items: $(`#shown-items-${list} li`)
+        items: document.querySelectorAll(`#shown-items-${list} li.todo-card`)
       });
     });
-
     state.order.length = 0;
-
-    listNames.forEach(list => {
-      $(`#shown-items-${list} li`).each(function () {
-        const id = $(this).attr('id');
-        state.order.push(id);
-      });
-    });
-
-    browser.storage.sync.set({
-      [storageKeys.orders]: state.order.join(',')
-    });
+    listNames.forEach((list) => 
+      document.querySelectorAll(`#shown-items-${list} li.todo-card`).forEach(todoCard => state.order.push(todoCard.id))
+    );
+    browser.storage.sync.set({ [storageKeys.orders]: state.order.join(',') });
   }
 
   function clearTodos(listToImpactName, clearAll) {
-    const itemsToImpact = $(`#shown-items-${listToImpactName} li a`);
+    const deleteLinks = document.querySelectorAll(`#shown-items-${listToImpactName} li.todo-card a`);
 
-    itemsToImpact.each(function () {
-      const $deleteLink = $(this);
-      const parentId = $deleteLink.closest('li').attr('id');
-
+    deleteLinks.forEach((deleteLink) => {
+      const todoCard = deleteLink.closest('li.todo-card');
+      if (!todoCard) return;
+      const parentId = todoCard.id;
       if (clearAll || (!clearAll && checkIfCompleted(parentId))) {
-        removeTodo($deleteLink);
+        removeTodo(deleteLink);
       }
     });
   }

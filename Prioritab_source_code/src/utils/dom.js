@@ -43,5 +43,61 @@ window.PrioritabDom = {
 
   isVisible(element) {
     return !element ? false : getComputedStyle(element).display !== "none";
+  },
+
+  fadeIn(element, duration = 200, display = "block", onComplete = null) {
+    if (!element) return;
+
+    element.style.opacity = "0";
+    element.style.display = display;
+
+    const start = performance.now();
+
+    function tick(now) {
+      const progress = Math.min((now - start) / duration, 1);
+
+      element.style.opacity = String(progress);
+
+      if (progress < 1) {
+        requestAnimationFrame(tick);
+        return;
+      }
+
+      element.style.opacity = "";
+
+      if (typeof onComplete === "function") {
+        onComplete();
+      }
+    }
+
+    requestAnimationFrame(tick);
+  },
+
+  fadeOut(element, duration = 200, onComplete = null) {
+    if (!element) return;
+
+    element.style.opacity = "1";
+
+    const start = performance.now();
+
+    function tick(now) {
+      const progress = Math.min((now - start) / duration, 1);
+
+      element.style.opacity = String(1 - progress);
+
+      if (progress < 1) {
+        requestAnimationFrame(tick);
+        return;
+      }
+
+      element.style.opacity = "";
+      element.style.display = "none";
+
+      if (typeof onComplete === "function") {
+        onComplete();
+      }
+    }
+
+    requestAnimationFrame(tick);
   }
 };
