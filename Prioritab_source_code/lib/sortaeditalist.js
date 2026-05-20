@@ -300,7 +300,7 @@ $(function () {
         e.target.isContentEditable;
 
       if (isEditableTarget) return;
-
+      
       if (e.key === 'ArrowUp') {
         e.preventDefault();
         const $prev = $item.prev('li.todo-card');
@@ -342,14 +342,12 @@ $(function () {
     const listCounter = state.counters[listName];
 
     const newTodoID = storageKeys.todo(listName, listCounter);
+    const newTodoText = todoToAdd.value.trim();
 
-    browser.storage.sync.set({ [newTodoID]: todoToAdd.value });
+    browser.storage.sync.set({ [newTodoID]: newTodoText });
     browser.storage.sync.set({ [storageKeys.counter(listName)]: listCounter });
-
-    browser.storage.sync.get(newTodoID, function (result) {
-      listToImpact.append(constructToDoCard(newTodoID, result[newTodoID]));
-      regenerateList();
-    });
+    listToImpact.append(constructToDoCard(newTodoID, newTodoText));
+    regenerateList();
 
     $(`#${newTodoID}`).css('display', 'none').fadeIn();
 
