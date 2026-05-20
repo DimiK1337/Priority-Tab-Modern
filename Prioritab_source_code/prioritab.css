@@ -229,7 +229,7 @@ body {
 
 .shown-items {
   text-align: left;
-  min-height: .5rem;
+  /* min-height: .5rem; */
   overflow: auto;
 }
 
@@ -255,6 +255,7 @@ body {
   box-shadow: none;
   background: none;
   font-size: 1em;
+  margin-top: 0.5rem;
 }
 
 ul {
@@ -308,6 +309,7 @@ input[type="text"] {
   border: solid 1px rgba(255, 255, 255, 0.3);
   transition: box-shadow 0.3s, border 0.3s;
   font-size: 1em;
+  /* margin-bottom: 1rem; */
 }
 
 input[type="text"]:focus {
@@ -346,6 +348,15 @@ input[type="text"]:focus {
 
 .todo-card-done-state div.squaredThree {
   color: var(--shadow-border-color);
+}
+
+.todo-card.dragging {
+  opacity: 0.9;
+}
+
+.shown-items {
+  /* TODO / WARNING: default min-height is .5rem */
+  min-height: 2rem; 
 }
 
 

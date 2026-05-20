@@ -62,6 +62,7 @@ $(function () {
         id="${toDoKey}" 
         class="todo-card main-bg-color main-font-color main-border-color ${isDone ? 'todo-card-done-state' : ''}" 
         tabindex="0"
+        draggable="true"
       >
         <div class="squaredThree">
           <input id="${toDoKey}-check" type="checkbox" name="check" ${isDone ? 'checked' : ''} />
@@ -181,6 +182,96 @@ $(function () {
     renderTodoList(orderListRight, $("#shown-items-right"));
   });
 
+  // Native dragging/sorting code to replace JQ UI
+  let draggingTodoCard = null; // Might want to add to state obj
+
+  function isDragBlockedTarget(target) {
+    const tagName = target.tagName.toLowerCase();
+
+    return (
+      tagName === 'input' ||
+      tagName === 'textarea' ||
+      tagName === 'select' ||
+      tagName === 'label' ||
+      tagName === 'a' ||
+      tagName === 'i' ||
+      target.isContentEditable
+    );
+  }
+
+  function getTodoListElements() {
+    return listNames.map((listName) => document.querySelector(`#shown-items-${listName}`)).filter(Boolean);
+  }
+
+  function getDragAfterElement(listElement, mouseY) {
+    const todoCards = Array.from(listElement.querySelectorAll('li.todo-card:not(.dragging)'));
+
+    return todoCards.reduce(
+      (closest, todoCard) => {
+        const box = todoCard.getBoundingClientRect();
+        const offset = mouseY - box.top - box.height / 2;
+
+        if (offset < 0 && offset > closest.offset) {
+          return {
+            offset,
+            element: todoCard
+          };
+        }
+
+        return closest;
+      },
+      {
+        offset: Number.NEGATIVE_INFINITY,
+        element: null
+      }
+    ).element;
+  }
+
+  function bindNativeTodoSorting() {
+    document.addEventListener('dragstart', (event) => {
+      const todoCard = event.target.closest('li.todo-card');
+
+      if (!todoCard || isDragBlockedTarget(event.target)) {
+        event.preventDefault();
+        return;
+      }
+
+      draggingTodoCard = todoCard;
+      todoCard.classList.add('dragging');
+
+      event.dataTransfer.effectAllowed = 'move';
+      event.dataTransfer.setData('text/plain', todoCard.id);
+    });
+
+    document.addEventListener('dragend', () => {
+      if (!draggingTodoCard) return;
+
+      draggingTodoCard.classList.remove('dragging');
+      draggingTodoCard.focus();
+      draggingTodoCard = null;
+
+      regenerateList();
+    });
+
+    getTodoListElements().forEach((listElement) => {
+      listElement.addEventListener('dragover', (event) => {
+        if (!draggingTodoCard) return;
+        event.preventDefault();
+
+        const afterElement = getDragAfterElement(listElement, event.clientY);
+        if (afterElement) {
+          listElement.insertBefore(draggingTodoCard, afterElement);
+        } else {
+          listElement.appendChild(draggingTodoCard);
+        }
+      });
+
+      listElement.addEventListener('drop', (event) => {
+        event.preventDefault();
+      });
+    });
+  }
+
   // What happens when you check the checkbox...
 
   // TODO: Remove $(this)
@@ -235,24 +326,13 @@ $(function () {
   itemLists.forEach($itemList => {
     $itemList.on('click', 'a', function (e) {
       e.preventDefault();
-      // TODO: Might be a problem was original removeTodo($(this))
       removeTodo(e.target);
     })
   });
 
   // Sort todo
-  itemLists.forEach($itemList => {
-    $itemList.sortable({
-      revert: true,
-      connectWith: ['#shown-items-left', '#shown-items-mid', '#shown-items-right'],
-      helper: 'clone',
-      appendTo: 'body',
-      zIndex: 10000,
-      stop: function () {
-        regenerateList();
-      }
-    });
-  });
+  bindNativeTodoSorting();
+
 
   // Edit and save todo
   bindInlineTodoEditing();
@@ -405,7 +485,7 @@ $(function () {
       });
     });
     state.order.length = 0;
-    listNames.forEach((list) => 
+    listNames.forEach((list) =>
       document.querySelectorAll(`#shown-items-${list} li.todo-card`).forEach(todoCard => state.order.push(todoCard.id))
     );
     browser.storage.sync.set({ [storageKeys.orders]: state.order.join(',') });
