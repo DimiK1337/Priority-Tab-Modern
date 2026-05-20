@@ -131,15 +131,16 @@ $(function () {
     }
 
     input.addEventListener('keydown', (event) => {
-      if (event.key === 'Enter') {
+      const handleEnter = (event) => {
         event.preventDefault();
         finishEdit(input.value, true);
-      }
-
-      if (event.key === 'Escape') {
+      };
+      const handleEscape = (event) => {
         event.preventDefault();
         finishEdit(originalValue, false);
-      }
+      };
+      if (event.key === 'Enter') handleEnter(event);
+      if (event.key === 'Escape') handleEscape(event);
     });
 
     // Matches your old inlineEdit behavior:
@@ -149,8 +150,6 @@ $(function () {
     });
 
     input.focus();
-    input.focus();
-
     const cursorPosition = input.value.length;
     input.setSelectionRange(cursorPosition, cursorPosition);
   }
