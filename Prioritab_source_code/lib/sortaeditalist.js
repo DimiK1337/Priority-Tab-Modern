@@ -48,9 +48,16 @@ $(function () {
   const forms = listNames.map(name => lists[name].form).filter(Boolean);
   const itemLists = listNames.map(name => lists[name].items).filter(Boolean);
 
-  const sweepDoneButtons = document.querySelectorAll('.sweep-link'); // $sweepDone
-  const clearAllButtons = document.querySelectorAll('.clear-all-link'); // $clearAll
-  const newTodoInputs = document.querySelectorAll('.todo'); // $newTodo
+  const sweepDoneButtons = document.querySelectorAll('.sweep-link');
+  const clearAllButtons = document.querySelectorAll('.clear-all-link');
+  const newTodoInputs = document.querySelectorAll('.todo');
+
+  const getListNameFromTodoID = (todoID) => {
+    if (todoID.includes('left')) return 'left';
+    if (todoID.includes('mid')) return 'mid';
+    if (todoID.includes('right')) return 'right';
+    return null;
+  }
 
   const checkIfCompleted = (toDoID) => state.dones.includes(toDoID);
 
@@ -308,7 +315,6 @@ $(function () {
   });
 
   // Bind the esc key on the new todo
-
   newTodoInputs.forEach((todoInput) => {
     todoInput.addEventListener('keydown', (event) => {
       if (event.key !== 'Escape') return;
@@ -344,12 +350,6 @@ $(function () {
     });
   });
 
-  // Sort todo
-  bindNativeTodoSorting();
-
-  // Edit and save todo
-  bindInlineTodoEditing();
-
   function bindClearAction(elements, clearAll) {
     elements.forEach((element) => {
       element.addEventListener('click', (event) => {
@@ -361,18 +361,45 @@ $(function () {
     });
   }
 
+  // Sort todo
+  bindNativeTodoSorting();
+
+  // Edit and save todo
+  bindInlineTodoEditing();
+
+  // Clear done & all buttons
   bindClearAction(sweepDoneButtons, false);
   bindClearAction(clearAllButtons, true);
 
-  // Keyboard for cycling the todo items
+  const getAdjacentListName = (currentListName, direction) => {
+    const currentIndex = listNames.indexOf(currentListName);
+    if (currentIndex < 0) return null;
+    if (direction === 'right') return listNames[(currentIndex + 1) % listNames.length];
+    if (direction === 'left') return listNames[(currentIndex - 1 + listNames.length) % listNames.length];
+    return null;
+  }
+
+  const moveTodoHorizontally = (todoCard, direction) => {
+    const currentListName = getListNameFromTodoID(todoCard.id);
+    if (!currentListName) return;
+
+    const targetListName = getAdjacentListName(currentListName, direction);
+    if (!targetListName) return;
+
+    const targetList = lists[targetListName].items;
+    if (!targetList) return;
+
+    targetList.appendChild(todoCard);
+    regenerateList();
+
+    todoCard.focus();
+  }
+
   // Keyboard for cycling the todo items
   itemLists.forEach((itemList) => {
     itemList.addEventListener('click', (event) => {
       const todoCard = event.target.closest('li.todo-card');
-
-      if (!todoCard || !itemList.contains(todoCard)) {
-        return;
-      }
+      if (!todoCard || !itemList.contains(todoCard)) return;
 
       const tagName = event.target.tagName.toLowerCase();
 
@@ -381,11 +408,7 @@ $(function () {
         tagName === 'label' ||
         tagName === 'a' ||
         tagName === 'i';
-
-      if (isInteractiveTarget) {
-        return;
-      }
-
+      if (isInteractiveTarget) return;
       todoCard.focus();
     });
 
@@ -401,29 +424,38 @@ $(function () {
         event.target.isContentEditable;
       if (isEditableTarget) return;
 
-      if (event.key === 'ArrowUp') {
+      const handleArrowUp = (event) => {
         event.preventDefault();
-
         const previousTodoCard = todoCard.previousElementSibling;
-
-        if (previousTodoCard?.matches('li.todo-card')) {
-          itemList.insertBefore(todoCard, previousTodoCard);
-          todoCard.focus();
-          regenerateList();
-        }
-      }
-
-      if (event.key === 'ArrowDown') {
+        if (previousTodoCard?.matches('li.todo-card')) itemList.insertBefore(todoCard, previousTodoCard);
+        else itemList.appendChild(todoCard);
+        todoCard.focus();
+        regenerateList();
+      };
+      const handleArrowDown = (event) => {
         event.preventDefault();
-
         const nextTodoCard = todoCard.nextElementSibling;
-
-        if (nextTodoCard?.matches('li.todo-card')) {
-          itemList.insertBefore(nextTodoCard, todoCard);
-          todoCard.focus();
-          regenerateList();
+        if (nextTodoCard?.matches('li.todo-card')) itemList.insertBefore(nextTodoCard, todoCard);
+        else {
+          const firstTodoCard = itemList.querySelector('li.todo-card');
+          if (firstTodoCard) itemList.insertBefore(todoCard, firstTodoCard);
         }
-      }
+        todoCard.focus();
+        regenerateList();
+      };
+      const handleArrowLeft = (event) => {
+        event.preventDefault();
+        moveTodoHorizontally(todoCard, "left")
+      };
+      const handleArrowRight = (event) => {
+        event.preventDefault();
+        moveTodoHorizontally(todoCard, "right")
+      };
+
+      if (event.key === 'ArrowUp') handleArrowUp(event);
+      if (event.key === 'ArrowDown') handleArrowDown(event);
+      if (event.key === 'ArrowLeft') handleArrowLeft(event)
+      if (event.key === 'ArrowRight') handleArrowRight(event)
     });
   });
 
