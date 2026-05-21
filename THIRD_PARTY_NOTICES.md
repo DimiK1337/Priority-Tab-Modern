@@ -53,8 +53,8 @@ License summary:
 - CSS/code: MIT License
 - Icons: CC BY 4.0
 
-Copied license/reference file:
-`third_party_licenses/Font-Awesome-4.7-LICENSE.html`
+Notice file:
+`third_party_licenses/Font-Awesome-4.7-NOTICE.md`
 
 ## OpenDyslexic
 
