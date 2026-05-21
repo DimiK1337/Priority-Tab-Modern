@@ -2,7 +2,10 @@
   "addons": {
     "priority-tab-modern@dimik1337.dev": {
       "updates": [
-        
+        {
+          "version": "0.0.2",
+          "update_link": "https://github.com/DimiK1337/Priority-Tab-Modern/releases/download/v0.0.2/e8c13baa18a544ee9cad-0.0.2.xpi?raw=1"
+        }
       ]
     }
   }
