@@ -111,11 +111,11 @@ body {
 }
 
 .main-font-color {
-  color: white;
+  color: var(--font-color);
 }
 
 .shadow-color {
-  color: rgba(255, 255, 255, 0.3);
+  color: var(--shadow-color);
 }
 
 .main-border-color {
@@ -123,7 +123,7 @@ body {
 }
 
 .shadow-border-color {
-  border-color: rgba(255, 255, 255, 0.3);
+  border-color: var(--shadow-border-color);
 }
 
 ::-webkit-scrollbar-thumb {
@@ -340,6 +340,10 @@ input[type="text"]:focus {
 
 .todo-card:focus {
   box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.35);
+
+  /* StackOverflow link for multicolored gradient: https://stackoverflow.com/a/62852138 */
+  /* box-shadow: inset 0 0 12px 12px white, inset 0 0 3px 2px white;
+  background: linear-gradient(to right, orange , yellow, green, cyan, blue, violet); */
 }
 
 .todo-text {
