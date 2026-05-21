@@ -1,0 +1,30 @@
+{
+  "name": "Priority Tab Modern",
+  "description": "A customizable new tab page for tracking priorities, progress, colors, backgrounds, and fluid animation.",
+  "version": "0.0.1",
+  "manifest_version": 3,
+  "chrome_url_overrides": {
+    "newtab": "prioritab.html"
+  },
+  "permissions": [
+    "storage",
+    "unlimitedStorage",
+    "management"
+  ],
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "priority-tab-modern@dimik1337.dev",
+      "data_collection_permissions": {
+        "required": [
+          "none"
+        ]
+      }
+    }
+  },
+  "icons": {
+    "16": "assets/logo/prioritab_logo_v2_16.png",
+    "32": "assets/logo/prioritab_logo_v2_32.png",
+    "48": "assets/logo/prioritab_logo_v2_48.png",
+    "128": "assets/logo/prioritab_logo_v2_128.png"
+  }
+}
