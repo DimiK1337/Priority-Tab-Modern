@@ -29,22 +29,15 @@ document.addEventListener('DOMContentLoaded', () => {
     order: []
   };
 
-  const lists = {
-    left: {
-      form: document.querySelector('#todo-form-left'),
-      items: document.querySelector('#shown-items-left')
-    },
-    mid: {
-      form: document.querySelector('#todo-form-mid'),
-      items: document.querySelector('#shown-items-mid')
-    },
-    right: {
-      form: document.querySelector('#todo-form-right'),
-      items: document.querySelector('#shown-items-right')
+  const listNames = ["left", "mid", "right"];
+  const _listReducer = (acc, curr) => {
+    acc[curr] = {
+      form: document.querySelector(`#todo-form-${curr}`),
+      items: document.querySelector(`#shown-items-${curr}`)
     }
+    return acc
   };
-
-  const listNames = Object.keys(lists);
+  const lists = listNames.reduce(_listReducer, {});
   const forms = listNames.map(name => lists[name].form).filter(Boolean);
   const itemLists = listNames.map(name => lists[name].items).filter(Boolean);
 
@@ -61,28 +54,79 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const checkIfCompleted = (toDoID) => state.dones.includes(toDoID);
 
-  const constructToDoCard = function (toDoKey, toDoText) {
-    const isDone = checkIfCompleted(toDoKey);
+  const createTodoCheckbox = (toDoKey, isDone) => {
+    const checkboxWrapper = document.createElement('div');
+    checkboxWrapper.className = 'squaredThree';
 
-    return `
-      <li 
-        id="${toDoKey}" 
-        class="todo-card main-bg-color main-font-color main-border-color ${isDone ? 'todo-card-done-state' : ''}" 
-        tabindex="0"
-        draggable="true"
-      >
-        <div class="squaredThree">
-          <input id="${toDoKey}-check" type="checkbox" name="check" ${isDone ? 'checked' : ''} />
-          <label for="${toDoKey}-check"></label>
-        </div>
-        <div class="todo-text">${toDoText}</div>
-        <div class="pull-right todo-card-right">
-          <a href="#" class="main-font-color">
-            <i class="fa fa-trash-o" title="Delete"></i>
-          </a>
-        </div>
-      </li>
-    `;
+    const checkbox = document.createElement('input');
+    checkbox.id = `${toDoKey}-check`;
+    checkbox.type = 'checkbox';
+    checkbox.name = 'check';
+    checkbox.checked = isDone;
+
+    const checkboxLabel = document.createElement('label');
+    checkboxLabel.setAttribute('for', `${toDoKey}-check`);
+
+    checkboxWrapper.append(checkbox, checkboxLabel);
+
+    return checkboxWrapper;
+  };
+
+  const createTodoText = (toDoText) => {
+    const todoText = document.createElement('div');
+    todoText.className = 'todo-text';
+    todoText.textContent = toDoText;
+
+    return todoText;
+  };
+
+  const createTodoDeleteButton = () => {
+    const rightSide = document.createElement('div');
+    rightSide.className = 'pull-right todo-card-right';
+
+    const deleteLink = document.createElement('a');
+    deleteLink.href = '#';
+    deleteLink.className = 'main-font-color';
+
+    const trashIcon = document.createElement('i');
+    trashIcon.className = 'fa fa-trash-o';
+    trashIcon.title = 'Delete';
+
+    deleteLink.append(trashIcon);
+    rightSide.append(deleteLink);
+
+    return rightSide;
+  };
+
+  const createTodoCardElement = (toDoKey, isDone) => {
+    const todoCard = document.createElement('li');
+
+    todoCard.id = toDoKey;
+    todoCard.className = [
+      'todo-card',
+      'main-bg-color',
+      'main-font-color',
+      'main-border-color',
+      isDone ? 'todo-card-done-state' : ''
+    ].filter(Boolean).join(' ');
+
+    todoCard.tabIndex = 0;
+    todoCard.draggable = true;
+
+    return todoCard;
+  };
+
+  const constructToDoCard = (toDoKey, toDoText) => {
+    const isDone = checkIfCompleted(toDoKey);
+    const todoCard = createTodoCardElement(toDoKey, isDone);
+
+    todoCard.append(
+      createTodoCheckbox(toDoKey, isDone),
+      createTodoText(toDoText),
+      createTodoDeleteButton()
+    );
+
+    return todoCard;
   };
 
   const renderTodoList = (orderList, listElement) => {
@@ -90,7 +134,8 @@ document.addEventListener('DOMContentLoaded', () => {
       orderList.forEach((key) => {
         const todoText = result[key];
         if (todoText === undefined) return; // Ignore zombie todos
-        listElement.insertAdjacentHTML('beforeend', constructToDoCard(key, todoText));
+        //listElement.insertAdjacentHTML('beforeend', constructToDoCard(key, todoText));
+        listElement.append(constructToDoCard(key, todoText));
       });
     });
   };
@@ -256,11 +301,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.addEventListener('dragend', () => {
       if (!draggingTodoCard) return;
-
       draggingTodoCard.classList.remove('dragging');
       draggingTodoCard.focus();
       draggingTodoCard = null;
-
       regenerateList();
     });
 
@@ -268,13 +311,9 @@ document.addEventListener('DOMContentLoaded', () => {
       listElement.addEventListener('dragover', (event) => {
         if (!draggingTodoCard) return;
         event.preventDefault();
-
         const afterElement = getDragAfterElement(listElement, event.clientY);
-        if (afterElement) {
-          listElement.insertBefore(draggingTodoCard, afterElement);
-        } else {
-          listElement.appendChild(draggingTodoCard);
-        }
+        if (afterElement) listElement.insertBefore(draggingTodoCard, afterElement);
+        else listElement.appendChild(draggingTodoCard);
       });
 
       listElement.addEventListener('drop', (event) => {
@@ -296,19 +335,12 @@ document.addEventListener('DOMContentLoaded', () => {
       const isChecked = checkbox.checked;
       if (isChecked) {
         todoCard.classList.add('todo-card-done-state');
-
-        if (!checkIfCompleted(toDoKey)) {
-          state.dones.push(toDoKey);
-        }
+        if (!checkIfCompleted(toDoKey)) state.dones.push(toDoKey);
       }
       else {
         todoCard.classList.remove('todo-card-done-state');
-
-        if (checkIfCompleted(toDoKey)) {
-          state.dones.splice(state.dones.indexOf(toDoKey), 1);
-        }
+        if (checkIfCompleted(toDoKey)) state.dones.splice(state.dones.indexOf(toDoKey), 1);
       }
-
       browser.storage.sync.set({ [storageKeys.dones]: state.dones });
     });
   });
@@ -401,7 +433,6 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!todoCard || !itemList.contains(todoCard)) return;
 
       const tagName = event.target.tagName.toLowerCase();
-
       const isInteractiveTarget =
         tagName === 'input' ||
         tagName === 'label' ||
@@ -442,22 +473,17 @@ document.addEventListener('DOMContentLoaded', () => {
         todoCard.focus();
         regenerateList();
       };
-      const handleArrowLeft = (event) => {
+      const HandleHorizontalArrow = (event, dir) => {
         event.preventDefault();
-        moveTodoHorizontally(todoCard, "left")
-      };
-      const handleArrowRight = (event) => {
-        event.preventDefault();
-        moveTodoHorizontally(todoCard, "right")
+        moveTodoHorizontally(todoCard, dir)
       };
 
       if (event.key === 'ArrowUp') handleArrowUp(event);
       if (event.key === 'ArrowDown') handleArrowDown(event);
-      if (event.key === 'ArrowLeft') handleArrowLeft(event)
-      if (event.key === 'ArrowRight') handleArrowRight(event)
+      if (event.key === 'ArrowLeft') HandleHorizontalArrow(event, "left")
+      if (event.key === 'ArrowRight') HandleHorizontalArrow(event, "right")
     });
   });
-
 
   // storage helpers for todos
   function incrementListCounter(listName) {
@@ -479,7 +505,7 @@ document.addEventListener('DOMContentLoaded', () => {
     browser.storage.sync.set({ [newTodoID]: newTodoText });
     browser.storage.sync.set({ [storageKeys.counter(listName)]: listCounter });
 
-    listToImpact.insertAdjacentHTML('beforeend', constructToDoCard(newTodoID, newTodoText));
+    listToImpact.append(constructToDoCard(newTodoID, newTodoText));
     regenerateList();
 
     fadeIn(document.getElementById(newTodoID), 200, "flex");
@@ -545,7 +571,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function clearTodos(listToImpactName, clearAll) {
     const deleteLinks = document.querySelectorAll(`#shown-items-${listToImpactName} li.todo-card a`);
-
     deleteLinks.forEach((deleteLink) => {
       const todoCard = deleteLink.closest('li.todo-card');
       if (!todoCard) return;
