@@ -44,6 +44,7 @@ FILES=(
   "prioritab.html"
   "prioritab.css"
   "README.md"
+  "THIRD_PARTY_NOTICES.md"
 )
 
 REQUIRED_RENAMED_FILES=(
@@ -55,6 +56,7 @@ DIRS=(
   "src"
   "lib"
   "assets"
+  "third_party_licenses"
 )
 
 rm -rf "$BUILD_DIR"
