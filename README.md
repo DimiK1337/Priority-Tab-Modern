@@ -112,14 +112,28 @@ The current goal is to prepare the extension for Firefox desktop and eventual AM
 
 ## Local installation in Firefox 🦊
 
-1. Clone or download this repository.
+This project uses `manifest.base.json` as the source of truth. A usable `manifest.json` is generated into `build/`.
+
+1. Build a local development version:
+
+   ```bash
+   ./scripts/build.sh listed
+   ```
+
 2. Open Firefox and go to:
 
    ```text
    about:debugging#/runtime/this-firefox
    ```
+
 3. Click **Load Temporary Add-on...**
-4. Select the extension's `manifest.json` file inside the project folder.
+
+4. Select:
+
+   ```text
+   build/manifest.json
+   ```
+
 5. Open a new tab.
 
 Temporary add-ons are removed when Firefox restarts, so this method is for development/testing only.
@@ -244,6 +258,18 @@ This is a working attribution list. Before bundling/submission, copy relevant li
 | OpenDyslexic attribution FAQ | https://forge.hackers.town/antijingoist/opendyslexic/src/branch/main/OFL-FAQ.txt | Attribution/license guidance            |
 | Open Sans source             | https://github.com/googlefonts/opensans                                          | Bundled font                            |
 | Open Sans OFL                | https://github.com/googlefonts/opensans/blob/main/OFL.txt                        | Font license                            |
+
+---
+
+## Demo assets
+
+Demo screenshots may use third-party images that are not part of the extension build.
+
+| Asset | Source | Attribution | Use |
+| ----- | ------ | ----------- | --- |
+| Futuristic neon city background | https://unsplash.com/photos/a-futuristic-city-at-night-with-neon-lights-dA0-qxdbyyY | Photo by Nat on Unsplash | Demo screenshots only |
+
+The demo background image is intended for screenshots and promotional/demo material. It should be stored outside the extension build, for example under `demo/screenshots/backgrounds/`.
 
 ---
 
