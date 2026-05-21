@@ -1,4 +1,4 @@
-// Prioritab_source_code/src/features/background-image.js
+//src/features/background-image.js
 
 function setBodyBackgroundImage(imageValue) {
     document.body.style.backgroundImage = imageValue ? `url("${imageValue}")` : "none";

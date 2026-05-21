@@ -1,4 +1,4 @@
-//Prioritab_source_code/src/config/defaults.js
+//src/config/defaults.js
 
 const PRIORITAB_DEFAULTS = {
     totalDayMS: 24 * 60 * 60 * 1000,

@@ -1,4 +1,4 @@
-//Prioritab_source_code/src/features/priorities-ui.js
+//src/features/priorities-ui.js
 
 function initPrioritiesUi() {
   const { qs, qsa, on, hide, show } = window.PrioritabDom;

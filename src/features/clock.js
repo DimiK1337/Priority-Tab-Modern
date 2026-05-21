@@ -1,4 +1,4 @@
-//Prioritab_source_code/src/features/clock.js
+//src/features/clock.js
 
 const MONTH_LONG_NAMES = [
     "January", "February", "March", "April", "May", "June", 

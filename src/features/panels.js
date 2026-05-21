@@ -1,4 +1,4 @@
-//Prioritab_source_code/src/features/panels.js
+//src/features/panels.js
 
 // TODO: Get rid of this, since the update shit is useless (since I removed it)
 function flashUpdateFooter(updateFooter) {

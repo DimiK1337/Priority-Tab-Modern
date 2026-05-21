@@ -41,8 +41,8 @@ ROOT_DIR="$(cd -- "$SCRIPT_DIR/.." && pwd)"
 BUILD_DIR="$ROOT_DIR/build"
 
 FILES=(
-  "prioritab.html"
-  "prioritab.css"
+  "priority_tab_modern.html"
+  "priority_tab_modern.css"
   "README.md"
   "THIRD_PARTY_NOTICES.md"
 )

@@ -129,36 +129,30 @@ Temporary add-ons are removed when Firefox restarts, so this method is for devel
 ## Project structure
 
 ```text
-Prioritab_source_code/
-├── fonts/
+.
+├── assets/
+│   ├── fonts/
+│   └── logo/
 ├── lib/
-│   ├── fluid.min.js
-│   └── sortaeditalist.js
+├── scripts/
 ├── src/
-│   ├── config/
-│   │   └── defaults.js
-│   ├── features/
-│   │   ├── background-image.js
-│   │   ├── clock.js
-│   │   ├── countdown.js
-│   │   ├── fluid-bg.js
-│   │   ├── panels.js
-│   │   ├── priorities-ui.js
-│   │   └── theme.js
-│   └── utils/
-│       └── dom.js
+├── third_party_licenses/
+├── manifest.base.json
 ├── manifest.json
-├── prioritab.html
-├── prioritab.css
-└── prioritab_logo_*
+├── priority_tab_modern.html
+├── priority_tab_modern.css
+├── README.md
+├── LICENSE_PRIORITY_TAB_MODERN.md
+├── PRIVACY_PRIORITY_TAB_MODERN.md
+└── THIRD_PARTY_NOTICES.md
 ```
 
 ### Important files
 
 | File                                 | Purpose                                         |
 | ------------------------------------ | ----------------------------------------------- |
-| `prioritab.html`                   | Main new-tab page markup                        |
-| `prioritab.css`                    | Global styling and layout                       |
+| `priority_tab_modern.html`         | Main new-tab page markup                        |
+| `priority_tab_modern.css`          | Global styling and layout                       |
 | `src/app.js`                       | Startup orchestration                           |
 | `src/config/defaults.js`           | Default settings and storage keys               |
 | `src/features/clock.js`            | Clock/date/month/year progress                  |
@@ -278,42 +272,3 @@ This is a working attribution list. Before bundling/submission, copy relevant li
 | Chrome/Chromium support                                        | Later                                           |
 
 ---
-
-## Possible project rename
-
-Renaming the project is probably a good idea before AMO submission.
-
-The project is inspired by Prioritab, but it has now diverged quite a bit. A rename would make it clearer that this is a modernized fork rather than the original extension.
-
-| Possible name       | Notes                             |
-| ------------------- | --------------------------------- |
-| Priority Tab Modern | Clear and descriptive             |
-| Priority New Tab    | Simple, generic                   |
-| Priorities Tab      | Short and close to the concept    |
-| FlowTab Priorities  | References the fluid animation    |
-| Neon Priorities     | Fits the current visual style     |
-| Prioritab Modified  | Honest, but less polished for AMO |
-
-A safe AMO-style description could be:
-
-```text
-Priority Tab Modern — a Firefox new-tab priority dashboard inspired by Prioritab.
-```
-
-That keeps attribution clear while avoiding confusion.
-
----
-
-## Notes before bundling
-
-Before final AMO packaging, copy as many third-party license files as possible into the repository.
-
-Suggested future files:
-
-```text
-LICENSE.md
-PRIVACY.md
-THIRD_PARTY_NOTICES.md
-third_party_licenses/
-```
-

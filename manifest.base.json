@@ -5,7 +5,7 @@
   "manifest_version": 3,
   "homepage_url": "https://github.com/DimiK1337/Priority-Tab-Modern#readme",
   "chrome_url_overrides": {
-    "newtab": "prioritab.html"
+    "newtab": "priority_tab_modern.html"
   },
   "permissions": [
     "storage",

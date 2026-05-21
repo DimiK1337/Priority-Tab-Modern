@@ -1,4 +1,4 @@
-//Prioritab_source_code/src/app.js
+//src/app.js
 
 window.onload = function () {
     setDateTimeFormat();

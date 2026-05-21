@@ -1,4 +1,4 @@
-//Prioritab_source_code/src/features/countdown.js
+//src/features/countdown.js
 function checkDayCountdown() {
     const workdayCheckbox = document.querySelector("#workday-checkbox");
     if (workdayCheckbox.checked) {

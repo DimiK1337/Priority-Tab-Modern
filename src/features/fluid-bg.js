@@ -1,4 +1,4 @@
-// Prioritab_source_code/src/features/fluid-bg.js
+//src/features/fluid-bg.js
 
 let fluidResizeBound = false;
 let fluidCursorBound = false;

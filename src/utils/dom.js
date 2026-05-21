@@ -1,4 +1,4 @@
-//Prioritab_source_code/src/utils/dom.js
+//src/utils/dom.js
 
 window.PrioritabDom = {
   qs(selector, root = document) {

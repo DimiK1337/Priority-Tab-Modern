@@ -1,4 +1,4 @@
-//Prioritab_source_code/src/features/theme.js
+//src/features/theme.js
 
 const COLOR_CUSTOMIZATION_STYLE_ID = "color-customization";
 const colorCustomizationRules = new Map();
