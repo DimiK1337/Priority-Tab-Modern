@@ -4,7 +4,7 @@ A modernized Firefox new-tab productivity page inspired by the original **Priori
 
 Priority Tab Modern keeps a small set of priorities visible every time you open a new tab. It has three task columns — **Today**, **This Week**, and **This Month** — plus a clock, progress counters, visual customization, keyboard controls, and an optional fluid animation background.
 
-> **Status:** Development / pre-AMO submission. Tested so far on Firefox desktop only.
+> **Status:** Listed AMO release submitted and awaiting review. The extension has been tested on Firefox desktop; additional platform testing is planned.
 
 ---
 
@@ -119,21 +119,17 @@ This project uses `manifest.base.json` as the source of truth. A usable `manifes
    ```bash
    ./scripts/build.sh listed
    ```
-
 2. Open Firefox and go to:
 
    ```text
    about:debugging#/runtime/this-firefox
    ```
-
 3. Click **Load Temporary Add-on...**
-
 4. Select:
 
    ```text
    build/manifest.json
    ```
-
 5. Open a new tab.
 
 Temporary add-ons are removed when Firefox restarts, so this method is for development/testing only.
@@ -265,8 +261,8 @@ This is a working attribution list. Before bundling/submission, copy relevant li
 
 Demo screenshots may use third-party images that are not part of the extension build.
 
-| Asset | Source | Attribution | Use |
-| ----- | ------ | ----------- | --- |
+| Asset                           | Source                                                                              | Attribution              | Use                   |
+| ------------------------------- | ----------------------------------------------------------------------------------- | ------------------------ | --------------------- |
 | Futuristic neon city background | https://unsplash.com/photos/a-futuristic-city-at-night-with-neon-lights-dA0-qxdbyyY | Photo by Nat on Unsplash | Demo screenshots only |
 
 The demo background image is intended for screenshots and promotional/demo material. It should be stored outside the extension build, for example under `demo/screenshots/backgrounds/`.
