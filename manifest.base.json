@@ -22,9 +22,9 @@
     }
   },
   "icons": {
-    "16": "assets/logo/prioritab_logo_v2_16.png",
-    "32": "assets/logo/prioritab_logo_v2_32.png",
-    "48": "assets/logo/prioritab_logo_v2_48.png",
-    "128": "assets/logo/prioritab_logo_v2_128.png"
+    "16": "assets/logo/priority_tab_modern_logo_16.png",
+    "32": "assets/logo/priority_tab_modern_logo_32.png",
+    "48": "assets/logo/priority_tab_modern_logo_48.png",
+    "128": "assets/logo/priority_tab_modern_logo_128.png"
   }
 }
