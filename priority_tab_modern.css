@@ -358,6 +358,10 @@ input[type="text"]:focus {
   flex: 1 1 auto;
 }
 
+.todo-text a {
+  text-decoration: underline;
+}
+
 .todo-card .todo-inline-edit-input {
   width: 100%;
   min-width: 0;
