@@ -342,6 +342,7 @@ input[type="text"]:focus {
   padding: 0.5em;
   display: flex;
   align-items: center;
+  min-width: 0;
 }
 
 .todo-card:focus {
@@ -355,11 +356,16 @@ input[type="text"]:focus {
 .todo-text {
   /* flex-grow: 1; */
   min-width: 0;
-  flex: 1 1 auto;
+  /* flex: 1 1 auto; */
+  flex: 1;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .todo-text a {
   text-decoration: underline!important;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .todo-card .todo-inline-edit-input {
