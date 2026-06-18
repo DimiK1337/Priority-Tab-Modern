@@ -359,7 +359,7 @@ input[type="text"]:focus {
 }
 
 .todo-text a {
-  text-decoration: underline;
+  text-decoration: underline!important;
 }
 
 .todo-card .todo-inline-edit-input {
