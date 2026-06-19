@@ -1,7 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <title>Priority Tab Modern</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link href="priority_tab_modern.css" rel="stylesheet">
   <link rel="stylesheet" href="lib/font-awesome.min.css">
 </head>
@@ -16,7 +19,7 @@
       <div id="datebox"></div>
     </div>
     <div id="countdownbox">
-      <div class="countdown-title">We are now through... </div>
+      <div class="countdown-title">We are now through...</div>
       <div id="countdownbox-justifier">
         <div id="countdown-day" class="countdown-segment">
           <div id="countdown-day-amount" class="countdown-amount"></div>
@@ -212,10 +215,16 @@
     </span>
   </div>
 
-  <script src="lib/sortaeditalist.js"></script>
-  <script src="lib/fluid.min.js"></script>
+  <script src="src/features/priorities/constants.js"></script>
+  <script src="src/features/priorities/state.js"></script>
+  <script src="src/features/priorities/context.js"></script>
+  <script src="src/features/priorities/render.js"></script>
 
+
+  <script src="lib/fluid.min.js"></script>
   <script src="src/utils/dom.js"></script>
+  <script src="lib/sortaeditalist.js"></script>
+
 
   <script src="src/config/defaults.js"></script>
   <script src="src/features/clock.js"></script>
@@ -227,4 +236,5 @@
   <script src="src/features/fluid-bg.js"></script>
   <script src="src/app.js"></script>
 </body>
+
 </html>
