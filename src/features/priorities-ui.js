@@ -1,7 +1,7 @@
 //src/features/priorities-ui.js
 
 function initPrioritiesUi() {
-  const { qs, qsa, on, hide, show } = window.PrioritabDom;
+  const { qs, qsa, on, hide, show } = window.Prioritab.dom;
 
   // Tiny helper function to reset a color picker when restoring default colors of the customize color section
   function setColorInputValue(selector, colorValue) {

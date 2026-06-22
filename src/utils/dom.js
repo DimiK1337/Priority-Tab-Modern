@@ -1,6 +1,8 @@
-//src/utils/dom.js
+// src/utils/dom.js
 
-window.PrioritabDom = {
+window.Prioritab = window.Prioritab || {};
+
+window.Prioritab.dom = {
   qs(selector, root = document) {
     return root.querySelector(selector);
   },

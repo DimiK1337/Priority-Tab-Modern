@@ -4,14 +4,16 @@ window.Prioritab = window.Prioritab || {};
 window.Prioritab.priorities = window.Prioritab.priorities || {};
 
 window.Prioritab.priorities.actions = (() => {
+
+  const { fadeIn, fadeOut } = window.Prioritab.dom;
+
   const createActions = ({
     browser,
     lists,
-    newTodoInputs,
-    fadeIn,
-    fadeOut,
+    newTodoInputs
   }) => {
     const { listNames, storageKeys } = window.Prioritab.priorities.constants;
+    const { fadeIn, fadeOut } = window.Prioritab.dom;
 
     const {
       state,

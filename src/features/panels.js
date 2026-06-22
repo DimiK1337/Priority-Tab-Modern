@@ -2,7 +2,7 @@
 
 // TODO: Get rid of this, since the update shit is useless (since I removed it)
 function flashUpdateFooter(updateFooter) {
-    const { show, hide } = window.PrioritabDom;
+    const { show, hide } = window.Prioritab.dom;
 
     if (!updateFooter) return;
     show(updateFooter);
@@ -12,7 +12,7 @@ function flashUpdateFooter(updateFooter) {
 }
 
 function initPanels() {
-    const { qs, on, hide, show, isVisible } = window.PrioritabDom;
+    const { qs, on, hide, show, isVisible } = window.Prioritab.dom;
 
     document.addEventListener("click", (event) => {
         const customizeCorner = qs("#customize-corner");
