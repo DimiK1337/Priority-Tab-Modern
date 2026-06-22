@@ -1,10 +1,11 @@
+//README.md
 # Priority Tab Modern 🌙
 
 A modernized Firefox new-tab productivity page inspired by the original **Prioritab** extension.
 
-Priority Tab Modern keeps a small set of priorities visible every time you open a new tab. It has three task columns — **Today**, **This Week**, and **This Month** — plus a clock, progress counters, visual customization, keyboard controls, and an optional fluid animation background.
+Priority Tab Modern keeps a small set of priorities visible every time you open a new tab. It has three task columns — **Today**, **This Week**, and **This Month** — plus a clock, progress counters, visual customization, keyboard controls, clickable task URLs, and an optional fluid animation background.
 
-> **Status:** Listed AMO release submitted and awaiting review. The extension has been tested on Firefox desktop; additional platform testing is planned.
+> **Status:** Listed on AMO for Firefox desktop. Tested on Firefox desktop. Chrome/Chromium support is planned next; additional platform testing is pending.
 
 ---
 
@@ -20,9 +21,10 @@ This modified version keeps that idea while modernizing the codebase and adding 
 | Drag and drop   | Replaced jQuery UI sortable with native drag/drop                 |
 | Inline editing  | Replaced jQuery inline-edit plugin                                |
 | Pub/sub         | Replaced pub/sub dependency with direct functions                 |
-| Colors          | Replaced jQuery color picker with native `<input type="color">` |
+| Colors          | Replaced jQuery color picker with native `<input type="color">`   |
 | Time formatting | Removed Moment.js and replaced it with native JavaScript          |
 | Background      | Added optional Fluid-JS animation and image handling              |
+| Code structure  | Split the priority/task system into feature modules               |
 
 ---
 
@@ -55,17 +57,18 @@ This modified version should not be presented as the original project. Attributi
 | Drag and drop across columns                     |     ✅ |
 | Persist order after refresh                      |     ✅ |
 | Persist checked/done state                       |     ✅ |
+| Detect URLs in tasks and make them clickable     |     ✅ |
 
 ### Keyboard controls ⌨️
 
 | Key            | Behavior                                                       |
 | -------------- | -------------------------------------------------------------- |
-| `ArrowUp`    | Move focused task up; wraps to bottom                          |
-| `ArrowDown`  | Move focused task down; wraps to top                           |
-| `ArrowLeft`  | Move focused task to previous column; wraps from left to right |
-| `ArrowRight` | Move focused task to next column; wraps from right to left     |
-| `Enter`      | Save inline todo edit                                          |
-| `Escape`     | Cancel inline todo edit / close new-task input area            |
+| `ArrowUp`      | Move focused task up; wraps to bottom                          |
+| `ArrowDown`    | Move focused task down; wraps to top                           |
+| `ArrowLeft`    | Move focused task to previous column; wraps from left to right |
+| `ArrowRight`   | Move focused task to next column; wraps from right to left     |
+| `Enter`        | Save inline todo edit                                          |
+| `Escape`       | Cancel inline todo edit / close new-task input area            |
 
 ### Time and progress
 
@@ -82,18 +85,18 @@ This modified version should not be presented as the original project. Attributi
 
 ### Customization 🎨
 
-| Feature                                      | Status |
-| -------------------------------------------- | -----: |
-| Background color picker                      |     ✅ |
-| Main font color picker                       |     ✅ |
-| Secondary font color picker                  |     ✅ |
-| Restore default colors                       |     ✅ |
-| Background image upload                      |     ✅ |
-| Center/remove background image               |     ✅ |
-| Fluid animation background                   |     ✅ |
-| Toggle fluid animation                       |     ✅ |
-| Show background image behind fluid animation |     ✅ |
-| OpenDyslexic font support                    |     ✅ |
+| Feature                                      | Status  |
+| -------------------------------------------- | ------: |
+| Background color picker                      |      ✅ |
+| Main font color picker                       |      ✅ |
+| Secondary font color picker                  |      ✅ |
+| Restore default colors                       |      ✅ |
+| Background image upload                      |      ✅ |
+| Center/remove background image               |      ✅ |
+| Fluid animation background                   |      ✅ |
+| Toggle fluid animation                       |      ✅ |
+| Show background image behind fluid animation |      ✅ |
+| OpenDyslexic font support                    | Planned |
 
 ---
 
@@ -101,12 +104,12 @@ This modified version should not be presented as the original project. Attributi
 
 | Browser           | Status              |
 | ----------------- | ------------------- |
-| Firefox desktop   | Tested              |
+| Firefox desktop   | Supported / tested  |
 | Firefox Android   | Not planned for now |
-| Chrome / Chromium | Not tested yet      |
+| Chrome / Chromium | Planned next        |
 | Other browsers    | Unknown             |
 
-The current goal is to prepare the extension for Firefox desktop and eventual AMO submission.
+The current public target is Firefox desktop. Chrome/Chromium support is the next planned distribution milestone.
 
 ---
 
@@ -119,17 +122,21 @@ This project uses `manifest.base.json` as the source of truth. A usable `manifes
    ```bash
    ./scripts/build.sh listed
    ```
+
 2. Open Firefox and go to:
 
    ```text
    about:debugging#/runtime/this-firefox
    ```
+
 3. Click **Load Temporary Add-on...**
+
 4. Select:
 
    ```text
    build/manifest.json
    ```
+
 5. Open a new tab.
 
 Temporary add-ons are removed when Firefox restarts, so this method is for development/testing only.
@@ -143,12 +150,37 @@ Temporary add-ons are removed when Firefox restarts, so this method is for devel
 ├── assets/
 │   ├── fonts/
 │   └── logo/
-├── lib/
+├── demo/
+│   └── screenshots/
 ├── scripts/
 ├── src/
+│   ├── app.js
+│   ├── config/
+│   │   └── defaults.js
+│   ├── features/
+│   │   ├── background-image.js
+│   │   ├── clock.js
+│   │   ├── countdown.js
+│   │   ├── fluid-bg.js
+│   │   ├── panels.js
+│   │   ├── priorities-ui.js
+│   │   ├── theme.js
+│   │   └── priorities/
+│   │       ├── actions.js
+│   │       ├── constants.js
+│   │       ├── context.js
+│   │       ├── dragging.js
+│   │       ├── editing.js
+│   │       ├── events.js
+│   │       ├── index.js
+│   │       ├── loader.js
+│   │       ├── render.js
+│   │       ├── state.js
+│   │       └── storage.js
+│   └── utils/
+│       └── dom.js
 ├── third_party_licenses/
 ├── manifest.base.json
-├── manifest.json
 ├── priority_tab_modern.html
 ├── priority_tab_modern.css
 ├── README.md
@@ -157,20 +189,68 @@ Temporary add-ons are removed when Firefox restarts, so this method is for devel
 └── THIRD_PARTY_NOTICES.md
 ```
 
+`manifest.json` is generated into `build/` by the build script and is not expected to exist at the repository root.
+
 ### Important files
 
-| File                                 | Purpose                                         |
-| ------------------------------------ | ----------------------------------------------- |
-| `priority_tab_modern.html`         | Main new-tab page markup                        |
-| `priority_tab_modern.css`          | Global styling and layout                       |
-| `src/app.js`                       | Startup orchestration                           |
-| `src/config/defaults.js`           | Default settings and storage keys               |
-| `src/features/clock.js`            | Clock/date/month/year progress                  |
-| `src/features/countdown.js`        | Day/workday countdown logic                     |
-| `src/features/theme.js`            | Color customization                             |
-| `src/features/background-image.js` | Background image upload/removal                 |
-| `src/features/fluid-bg.js`         | Fluid animation settings and behavior           |
-| `lib/sortaeditalist.js`            | Todo-list behavior; should be modularized later |
+| File                                      | Purpose                                                        |
+| ----------------------------------------- | -------------------------------------------------------------- |
+| `priority_tab_modern.html`                | Main new-tab page markup                                       |
+| `priority_tab_modern.css`                 | Global styling and layout                                      |
+| `manifest.base.json`                      | Source-of-truth manifest used by the build script              |
+| `src/app.js`                              | Startup orchestration for the extension                        |
+| `src/utils/dom.js`                        | Shared DOM helpers under `window.Prioritab.dom`                |
+| `src/config/defaults.js`                  | Default settings and storage keys                              |
+| `src/features/clock.js`                   | Clock/date display                                             |
+| `src/features/countdown.js`               | Day/workday/month/year progress logic                          |
+| `src/features/theme.js`                   | Color customization                                            |
+| `src/features/background-image.js`        | Background image upload/removal                                |
+| `src/features/panels.js`                  | Settings/customization panel behavior                          |
+| `src/features/priorities-ui.js`           | Priority panel UI toggles and controls                         |
+| `src/features/fluid-bg.js`                | Fluid animation settings and behavior                          |
+| `src/features/priorities/index.js`        | Entry point for the priority/task feature                      |
+| `src/features/priorities/loader.js`       | Loads saved todos and renders initial task lists               |
+| `src/features/priorities/actions.js`      | Add, remove, clear, move, and regenerate todo actions          |
+| `src/features/priorities/events.js`       | Event binding for priority/task interactions                   |
+| `src/features/priorities/render.js`       | Todo card rendering, checkbox/text/delete elements, URL links  |
+| `src/features/priorities/storage.js`      | Storage helpers for todo text, order, counters, and done state |
+| `src/features/priorities/state.js`        | In-memory priority/task state helpers                          |
+| `src/features/priorities/context.js`      | DOM references for priority columns, forms, and buttons        |
+| `src/features/priorities/editing.js`      | Inline todo editing behavior                                   |
+| `src/features/priorities/dragging.js`     | Native drag/drop sorting behavior                              |
+| `src/features/priorities/constants.js`    | Priority list names, storage keys, and shared constants        |
+
+---
+
+## Priority feature module flow
+
+The priority/task system is initialized from `src/app.js`:
+
+```js
+window.Prioritab.priorities.index.init();
+```
+
+The feature initializer then wires together the priority modules:
+
+```text
+index.js
+├── context.js   → finds priority-related DOM elements
+├── actions.js   → creates todo operations
+├── editing.js   → creates inline-edit handlers
+├── dragging.js  → creates drag/drop handlers
+├── loader.js    → loads saved todos from storage
+└── events.js    → binds UI events to actions/editing/dragging
+```
+
+The data flow is intentionally simple:
+
+```text
+storage.js → loader.js → render.js
+actions.js → storage.js + state.js + render.js
+events.js  → actions.js / editing.js / dragging.js
+```
+
+This replaces the older monolithic `sortaeditalist.js` behavior with smaller modules.
 
 ---
 
@@ -195,14 +275,15 @@ No remote backend is currently used.
 
 ## Major modernization completed 🛠️
 
-| Dependency / legacy behavior | Replacement              |
-| ---------------------------- | ------------------------ |
-| jQuery todo logic            | Native JavaScript        |
-| jQuery UI sortable           | Native drag/drop         |
-| jQuery inline-edit plugin    | Native inline editing    |
-| pubsub plugin                | Direct function calls    |
-| colpick color picker         | Native color inputs      |
-| Moment.js                    | Native date/time helpers |
+| Dependency / legacy behavior | Replacement                  |
+| ---------------------------- | ---------------------------- |
+| jQuery todo logic            | Native JavaScript modules    |
+| jQuery UI sortable           | Native drag/drop             |
+| jQuery inline-edit plugin    | Native inline editing        |
+| pubsub plugin                | Direct function calls        |
+| colpick color picker         | Native color inputs          |
+| Moment.js                    | Native date/time helpers     |
+| Monolithic todo script       | Modular priority feature     |
 
 ---
 
@@ -216,7 +297,7 @@ No analytics, tracking, external servers, or third-party network requests are us
 
 If browser sync is enabled, the browser may sync extension storage according to the user's browser account and browser settings. That syncing is handled by the browser, not by this extension.
 
-See `PRIVACY.md` for the standalone privacy policy.
+See `PRIVACY_PRIORITY_TAB_MODERN.md` for the standalone privacy policy.
 
 ---
 
@@ -237,20 +318,20 @@ This software is provided "as is", without warranty of any kind.
 
 Third-party components, fonts, and libraries included in this project remain subject to their own licenses.
 
-See `LICENSE.md` for the full license text.
+See `LICENSE_PRIORITY_TAB_MODERN.md` for the full license text.
 
 ---
 
 ## Third-party attributions 📚
 
-This is a working attribution list. Before bundling/submission, copy relevant license files into the repository where possible.
+Third-party license files and notices should be kept in `third_party_licenses/` and `THIRD_PARTY_NOTICES.md`.
 
 | Dependency                   | Link                                                                             | Use                                     |
 | ---------------------------- | -------------------------------------------------------------------------------- | --------------------------------------- |
 | Prioritab                    | https://github.com/allenjhyang/prioritab/tree/master                             | Original inspiration/base project       |
 | Fluid-JS                     | https://github.com/malik-tillman/Fluid-JS                                        | WebGL fluid background animation        |
 | Font Awesome                 | https://github.com/FortAwesome/Font-Awesome                                      | Icons, including trash/cog icons        |
-| OpenDyslexic source          | https://forge.hackers.town/antijingoist/opendyslexic                             | Optional dyslexia-friendly font support |
+| OpenDyslexic source          | https://forge.hackers.town/antijingoist/opendyslexic                             | Planned optional dyslexia-friendly font |
 | OpenDyslexic attribution FAQ | https://forge.hackers.town/antijingoist/opendyslexic/src/branch/main/OFL-FAQ.txt | Attribution/license guidance            |
 | Open Sans source             | https://github.com/googlefonts/opensans                                          | Bundled font                            |
 | Open Sans OFL                | https://github.com/googlefonts/opensans/blob/main/OFL.txt                        | Font license                            |
@@ -271,26 +352,23 @@ The demo background image is intended for screenshots and promotional/demo mater
 
 ## Future work
 
-### Before AMO submission
+### Next milestone
 
-| Task                          | Notes                                                 |
-| ----------------------------- | ----------------------------------------------------- |
-| Clean unused libraries        | Completed                                             |
-| Copy third-party licenses     | As many as possible before bundling                   |
-| Add AMO reviewer notes        | Explain storage, no tracking, bundled libraries/fonts |
-| Run `web-ext lint`          | Catch AMO validation issues early                     |
-| Build final extension package | Use `web-ext build`                                 |
-| Prepare AMO listing           | Description, screenshots, reviewer notes, categories  |
+| Task                    | Notes                                                  |
+| ----------------------- | ------------------------------------------------------ |
+| Chrome/Chromium support | Planned next to expand distribution beyond Firefox AMO |
+| Browser-specific builds | Generate Firefox and Chrome manifests/build folders    |
+| Chrome local testing    | Test with Chrome/Chromium unpacked extension workflow  |
 
 ### Later features
 
 | Feature                                                        | Priority                                        |
 | -------------------------------------------------------------- | ----------------------------------------------- |
-| JSON export/import for todos                                   | Later, after AMO                                |
-| Split `sortaeditalist.js` into modules                       | High, but after AMO prep or as a cleanup sprint |
-| Add OpenDyslexic toggle in settings                            | Medium                                          |
+| JSON export/import for todos and settings                      | High after Chrome support                       |
+| Add options page for import/export and advanced settings       | Later, when data-management features justify it |
+| OpenDyslexic font support                                      | Medium                                          |
 | Preserve relative row position during horizontal task movement | Low/medium                                      |
 | Improve customization panel styling                            | Medium                                          |
-| Chrome/Chromium support                                        | Later                                           |
+| Firefox Android investigation                                  | Nice idea, not planned for now                  |
 
 ---
