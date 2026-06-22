@@ -9,8 +9,7 @@
   },
   "permissions": [
     "storage",
-    "unlimitedStorage",
-    "management"
+    "unlimitedStorage"
   ],
   "browser_specific_settings": {
     "gecko": {

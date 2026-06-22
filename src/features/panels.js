@@ -24,6 +24,7 @@ function initPanels() {
             show(customizeButton, "inline");
         }
 
+        // TODO: Use the listnames constants to generate this
         const listClassSuffixes = ["left", "mid", "right"];
 
         for (const suffix of listClassSuffixes) {
@@ -75,7 +76,4 @@ function initPanels() {
         });
     });
 
-    on(qs("#uninstall-extension-button"), "click", () => {
-        browser.management.uninstallSelf({ showConfirmDialog: true });
-    });
 }
