@@ -92,6 +92,18 @@ function setDateTimeFormat() {
     );
 }
 
+function debounce(fn, delay = 500) {
+    let timeoutID;
+
+    return function (...args) {
+        clearTimeout(timeoutID);
+
+        timeoutID = setTimeout(() => {
+            fn.apply(this, args);
+        }, delay);
+    };
+}
+
 function createColorPickerInstance(
     inputID,
     defaultColor,
@@ -118,20 +130,18 @@ function createColorPickerInstance(
         }
     );
 
-    input.addEventListener("input", function () {
-        const nextColor = input.value;
-        setColorProperty(cssClasses, propType, nextColor);
-
-        browser.storage.sync.set({
-            [storageSyncKey]: nextColor
-        });
-    });
-
-    input.addEventListener("change", function () {
+    const saveColorDebounced = debounce(function () {
         browser.storage.sync.set({
             [storageSyncKey]: input.value
         });
-    });
+    }, 500);
 
+    input.addEventListener("input", function () {
+        const nextColor = input.value;
+
+        setColorProperty(cssClasses, propType, nextColor);
+        saveColorDebounced();
+    });
     return input;
 }
+
