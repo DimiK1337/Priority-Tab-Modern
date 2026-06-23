@@ -1,7 +1,7 @@
 {
   "name": "Priority Tab Modern",
   "description": "A customizable new tab page for tracking priorities, progress, colors, backgrounds, and fluid animation.",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "manifest_version": 3,
   "homepage_url": "https://github.com/DimiK1337/Priority-Tab-Modern#readme",
   "chrome_url_overrides": {
